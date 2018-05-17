@@ -1,7 +1,13 @@
 const ExtendableError = require('es6-error')
+const ow = require('ow')
 
 class AppError extends ExtendableError {
   constructor (options = {}) {
+    ow(options.message, ow.any(ow.string, ow.null, ow.undefined))
+    ow(options.err, ow.any(ow.error, ow.null, ow.undefined))
+    ow(options.type, ow.any(ow.string, ow.null, ow.undefined))
+    ow(options.severity, ow.any(ow.string, ow.null, ow.undefined))
+    ow(options.statusCode, ow.any(ow.number, ow.null, ow.undefined))
     super(options.message || 'App error')
     this.err = options.err || null
     this.type = options.type || 'internal'
@@ -36,6 +42,10 @@ class AppError extends ExtendableError {
   }
 
   addReason (reasons) {
+    ow(reasons, ow.any(
+      ow.object.hasKeys('path', 'message').valuesOfType(ow.string),
+      ow.array.ofType(ow.object.hasKeys('path', 'message').valuesOfType(ow.string))
+    ))
     if (!Array.isArray(reasons)) {
       reasons = [reasons]
     }
