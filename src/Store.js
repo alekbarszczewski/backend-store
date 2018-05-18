@@ -115,5 +115,4 @@ function getNext (middlewares, fn, { middlewareContext, methodContext }) {
   }
 }
 
-module.exports.Store = Store
-module.exports.getNext = getNext
+module.exports = Store

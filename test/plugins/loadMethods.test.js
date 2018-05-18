@@ -3,7 +3,7 @@
 const chai = require('chai')
 const sinon = require('sinon')
 const path = require('path')
-const Store = require('./../../src/Store').Store
+const Store = require('./../../src/Store')
 const loadMethods = require('./../../src/plugins/loadMethods')
 
 chai.use(require('chai-uuid'))

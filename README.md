@@ -1,8 +1,7 @@
 #### TODO
 
-* lint
 * cov
 * test logger
-* publish / export
+* publish
+* export
 * docs
-* dispatch nested dont allow to change context

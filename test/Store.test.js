@@ -2,7 +2,7 @@
 
 const chai = require('chai')
 const sinon = require('sinon')
-const Store = require('./../src/Store').Store
+const Store = require('./../src/Store')
 const errors = require('./../src/errors')
 
 chai.use(require('chai-uuid'))
@@ -251,7 +251,7 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake(async (payload, { dispatch, context }) => {
         context.counter++
-        const result2 = await dispatch('fn2', 'payload2')
+        const result2 = await dispatch('fn2', 'payload2', { modified: true }) // context should be ignored here
         return ['fn1'].concat(result2)
       })
       const fn2 = sinon.fake(async (payload, { dispatch, context }) => {
