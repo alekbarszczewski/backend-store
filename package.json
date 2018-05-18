@@ -8,6 +8,7 @@
     "docs": "docsify serve ./docs"
   },
   "dependencies": {
+    "bunyan": "^1.8.12",
     "es6-error": "^4.1.1",
     "node-dir": "^0.1.17",
     "ow": "^0.3.0",

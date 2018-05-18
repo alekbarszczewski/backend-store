@@ -5,6 +5,6 @@
 * tests
 * publish / export
 * docs
-* logger
 * wrapError tests
 * wrap app errors
+* dispatch nested dont allow to change context

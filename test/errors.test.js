@@ -139,7 +139,24 @@ describe('errors', () => {
         expect(err2.data).to.equal(data)
         expect(err2.reasons).to.equal(null)
       })
-      // TODO validate args
+
+      it('throw error on invalid args(s)', () => {
+        expect(() => {
+          new AppError({ message: 123 })
+        }).to.throw(/Any predicate failed with the following errors/)
+        expect(() => {
+          new AppError({ err: 123 })
+        }).to.throw(/Any predicate failed with the following errors/)
+        expect(() => {
+          new AppError({ type: 123 })
+        }).to.throw(/Any predicate failed with the following errors/)
+        expect(() => {
+          new AppError({ severity: 123 })
+        }).to.throw(/Any predicate failed with the following errors/)
+        expect(() => {
+          new AppError({ statusCode: 'abc' })
+        }).to.throw(/Any predicate failed with the following errors/)
+      })
     })
 
     describe('#getOriginalError', () => {
@@ -211,7 +228,33 @@ describe('errors', () => {
           { path: 'path3', message: 'message3' }
         ])
       })
-      // TODO validate args
+
+      it('throw error on invalid arg(s)', () => {
+        const err = new AppError()
+
+        const invalidArgs = [
+          { path: 'abc', message: 123 },
+          { path: 123, message: 'abc' },
+          { path: 'abc' },
+          { message: 'abc' },
+          {},
+          'abc',
+          123,
+          [{ path: 'abc', message: 123 }],
+          [{ path: 123, message: 'abc' }],
+          [{ path: 'abc' }],
+          [{ message: 'abc' }],
+          [{}],
+          ['abc'],
+          [123]
+        ]
+
+        invalidArgs.forEach(arg => {
+          expect(() => {
+            err.addReason(invalidArgs)
+          }).to.throw(/Any predicate failed with the following errors/)
+        })
+      })
     })
 
     describe('#hasReasons', () => {
