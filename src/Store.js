@@ -5,7 +5,6 @@ const errors = require('./errors')
 const methodNamePattern = /^[a-zA-Z_][a-zA-Z_0-9]*(\/[a-zA-Z_][a-zA-Z_0-9]*)*$/i
 
 class Store {
-
   constructor () {
     this.methods = new Map()
     this.middleware = []
@@ -31,16 +30,24 @@ class Store {
   }
 
   async dispatch (name, payload, context, options = {}) {
-    return this._dispatch(name, payload, context, {
-      cid: options.cid || uuid(),
-      seq: 0
-    }, [])
+    try {
+      const result = await this._dispatch(name, payload, context, {
+        cid: options.cid || uuid(),
+        seq: 0
+      }, [])
+      return result
+    } catch (err) {
+      if (!(err instanceof errors.AppError)) {
+        throw new errors.InternalError({ err })
+      }
+      throw err
+    }
   }
 
   _dispatch (name, payload, context, options, stack) {
     const methodEntry = this.methods.get(name)
     if (!methodEntry) {
-      throw new Error(`Method '${name}' is not defined`)
+      throw new errors.NotImplementedError({ message: `Method '${name}' is not defined` })
     }
     const cid = options.cid
     const seq = options.seq

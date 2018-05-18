@@ -1,5 +1,6 @@
+/* eslint-env mocha */
+
 const chai = require('chai')
-const sinon = require('sinon')
 const errors = require('./../src/errors')
 
 chai.use(require('chai-uuid'))
@@ -8,42 +9,42 @@ const expect = chai.expect
 
 const testErrors = [
   {
-    errorCls: errors.AuthenticationError,
+    ErrorCls: errors.AuthenticationError,
     message: 'Authentication error',
     type: 'authentication',
     severity: 'warning',
     statusCode: 401
   },
   {
-    errorCls: errors.AuthorizationError,
+    ErrorCls: errors.AuthorizationError,
     message: 'Authorization error',
     type: 'authorization',
     severity: 'warning',
     statusCode: 403
   },
   {
-    errorCls: errors.InternalError,
+    ErrorCls: errors.InternalError,
     message: 'Internal error',
     type: 'internal',
     severity: 'error',
     statusCode: 500
   },
   {
-    errorCls: errors.NotFoundError,
+    ErrorCls: errors.NotFoundError,
     message: 'Not found error',
     type: 'notFound',
     severity: 'warning',
     statusCode: 404
   },
   {
-    errorCls: errors.NotImplementedError,
+    ErrorCls: errors.NotImplementedError,
     message: 'Not implemented error',
     type: 'notImplemented',
     severity: 'error',
     statusCode: 503
   },
   {
-    errorCls: errors.ValidationError,
+    ErrorCls: errors.ValidationError,
     message: 'Validation error',
     type: 'validation',
     severity: 'warning',
@@ -55,8 +56,8 @@ const AppError = errors.AppError
 
 describe('errors', () => {
   testErrors.forEach(testError => {
-    it(testError.errorCls.name, () => {
-      const err1 = new testError.errorCls()
+    it(testError.ErrorCls.name, () => {
+      const err1 = new testError.ErrorCls()
       expect(err1).to.be.instanceOf(errors.AppError)
       expect(err1.message).to.equal(testError.message)
       expect(err1.type).to.equal(testError.type)
@@ -68,7 +69,7 @@ describe('errors', () => {
       expect(err1.hasReasons()).to.equal(false)
       const originalErr = new Error('test')
       const data = {}
-      const err2 = new testError.errorCls({
+      const err2 = new testError.ErrorCls({
         message: 'abc',
         type: 'abc',
         severity: 'abc',
@@ -142,19 +143,19 @@ describe('errors', () => {
 
       it('throw error on invalid args(s)', () => {
         expect(() => {
-          new AppError({ message: 123 })
+          throw new AppError({ message: 123 })
         }).to.throw(/Any predicate failed with the following errors/)
         expect(() => {
-          new AppError({ err: 123 })
+          throw new AppError({ err: 123 })
         }).to.throw(/Any predicate failed with the following errors/)
         expect(() => {
-          new AppError({ type: 123 })
+          throw new AppError({ type: 123 })
         }).to.throw(/Any predicate failed with the following errors/)
         expect(() => {
-          new AppError({ severity: 123 })
+          throw new AppError({ severity: 123 })
         }).to.throw(/Any predicate failed with the following errors/)
         expect(() => {
-          new AppError({ statusCode: 'abc' })
+          throw new AppError({ statusCode: 'abc' })
         }).to.throw(/Any predicate failed with the following errors/)
       })
     })
@@ -219,8 +220,8 @@ describe('errors', () => {
       it('add resons(s)', () => {
         const err1 = new AppError()
         const err2 = new AppError()
-        .addReason({ path: 'path1', message: 'message1' })
-        .addReason([{ path: 'path2', message: 'message2' }, { path: 'path3', message: 'message3' }])
+          .addReason({ path: 'path1', message: 'message1' })
+          .addReason([{ path: 'path2', message: 'message2' }, { path: 'path3', message: 'message3' }])
         expect(err1.reasons).to.equal(null)
         expect(err2.reasons).to.eql([
           { path: 'path1', message: 'message1' },
@@ -261,7 +262,7 @@ describe('errors', () => {
       it('return true if there are any resons', () => {
         const err1 = new AppError()
         const err2 = new AppError()
-        .addReason({ path: 'path1', message: 'message1' })
+          .addReason({ path: 'path1', message: 'message1' })
         expect(err1.hasReasons()).to.equal(false)
         expect(err2.hasReasons()).to.equal(true)
       })

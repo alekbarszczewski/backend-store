@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+
 const chai = require('chai')
 const sinon = require('sinon')
 const Store = require('./../src/Store').Store
@@ -91,7 +93,6 @@ describe('Store', () => {
       })
     })
 
-
     it('throw error on invalid or missing name arg', () => {
       [
         null,
@@ -125,7 +126,6 @@ describe('Store', () => {
       })
     })
 
-
     it('throw error on duplicate method name', () => {
       const s = new Store()
       s.define('test', function () {})
@@ -144,7 +144,6 @@ describe('Store', () => {
       expect(s.middleware.length).to.equal(1)
       expect(s.middleware[0]).to.equal(fn)
     })
-
 
     it('throw error on invalid or missing fn arg', () => {
       [
@@ -198,7 +197,8 @@ describe('Store', () => {
         {},
         [],
         'abc'
-      ].forEach(pluginFn => {
+      ]
+      invalidPluginFns.forEach(pluginFn => {
         expect(() => {
           s.plugin(pluginFn)
         }).to.throw(/Expected argument to be of type `function`/)
@@ -238,7 +238,6 @@ describe('Store', () => {
       const s = new Store()
       const fnResult = {}
       const fn = sinon.fake.resolves(fnResult)
-      const meta = {}
       s.define('test', fn)
       const result = await s.dispatch('test')
       expect(result).to.equal(fnResult)
@@ -266,7 +265,6 @@ describe('Store', () => {
       s.define('fn2', fn2, 'meta2')
       s.define('fn3', fn3, 'meta3')
 
-      const payload = {}
       const context = { counter: 0 }
       const result = await s.dispatch('fn1', 'payload1', context)
       expect(result).to.eql(['fn1', 'fn2', 'fn3'])
@@ -278,7 +276,8 @@ describe('Store', () => {
         method: 'fn1'
       }]
 
-      const fakes = [fn1, fn2, fn3].forEach((fn, index) => {
+      const fakes = [fn1, fn2, fn3]
+      fakes.forEach((fn, index) => {
         const methodContext = fn.firstCall.args[1]
         const methodPayload = fn.firstCall.args[0]
         expect(methodPayload).to.equal(`payload${index + 1}`)
@@ -320,7 +319,14 @@ describe('Store', () => {
 
     it('throw error if method does not exist', async () => {
       const s = new Store()
-      await expect(s.dispatch('abc')).to.be.rejectedWith(/Method 'abc' is not defined/)
+      let error
+      try {
+        await s.dispatch('abc')
+      } catch (err) {
+        error = err
+      }
+      await expect(error).to.be.instanceOf(errors.NotImplementedError)
+      expect(error.message).to.equal(`Method 'abc' is not defined`)
     })
 
     it('run middleware', async () => {
@@ -333,8 +339,8 @@ describe('Store', () => {
       const meta2 = {}
       s.define('fn1', fn1, meta1)
       s.define('fn2', fn2, meta2)
-      const m1 = sinon.fake(async (ctx, next) => {
-        return await next()
+      const m1 = sinon.fake((ctx, next) => {
+        return next()
       })
       s.use(m1)
       const context = {}
@@ -360,6 +366,7 @@ describe('Store', () => {
       expect(ctx1.meta).to.equal(meta1)
       expect(ctx1.errors).to.equal(errors)
       expect(ctx1.stack).to.eql(stack)
+      expect(next1).to.be.instanceOf(Function)
 
       stack.push({ cid, seq: 1, method: 'fn2' })
 
@@ -371,19 +378,20 @@ describe('Store', () => {
       expect(ctx2.meta).to.equal(meta2)
       expect(ctx2.errors).to.equal(errors)
       expect(ctx2.stack).to.eql(stack)
+      expect(next2).to.be.instanceOf(Function)
     })
 
     it('modify payload in middleware #1', async () => {
       const s = new Store()
       const fn1 = sinon.fake()
       s.define('fn1', fn1)
-      const m1 = sinon.fake(async (ctx, next) => {
+      const m1 = sinon.fake((ctx, next) => {
         ctx.payload = 'modified1'
-        return await next()
+        return next()
       })
-      const m2 = sinon.fake(async (ctx, next) => {
+      const m2 = sinon.fake((ctx, next) => {
         ctx.payload = 'modified2'
-        return await next()
+        return next()
       })
       s.use(m1)
       s.use(m2)
@@ -396,9 +404,9 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake()
       s.define('fn1', fn1)
-      const m1 = sinon.fake(async (ctx, next) => {
+      const m1 = sinon.fake((ctx, next) => {
         ctx.payload.counter++
-        return await next()
+        return next()
       })
       s.use(m1)
       await s.dispatch('fn1', { counter: 0 })
@@ -410,9 +418,9 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake()
       s.define('fn1', fn1)
-      const m1 = sinon.fake(async (ctx, next) => {
+      const m1 = sinon.fake((ctx, next) => {
         ctx.context.counter++
-        return await next()
+        return next()
       })
       s.use(m1)
       await s.dispatch('fn1', null, { counter: 0 })
@@ -466,8 +474,15 @@ describe('Store', () => {
         await next()
         await next()
       })
-      await expect(s.dispatch('fn1')).to.be.rejectedWith('next() called more than once')
+      let error
+      try {
+        await s.dispatch('fn1')
+      } catch (err) {
+        error = err
+      }
       expect(fn1.calledOnce).to.equal(true)
+      expect(error).to.be.instanceOf(errors.InternalError)
+      expect(error.getOriginalError().message).to.equal('next() called more than once')
     })
 
     it('throw error on duplicate next execution in middleware #2', async () => {
@@ -482,9 +497,19 @@ describe('Store', () => {
         await next()
       })
       s.use(m2)
-      await expect(s.dispatch('fn1')).to.be.rejectedWith('next() called more than once')
+
+      let error
+
+      try {
+        await s.dispatch('fn1')
+      } catch (err) {
+        error = err
+      }
+
       expect(fn1.calledOnce).to.equal(true)
       expect(m2.calledOnce).to.equal(true)
+      expect(error).to.be.instanceOf(errors.InternalError)
+      expect(error.getOriginalError().message).to.equal('next() called more than once')
     })
 
     it('handle error from middleware', async () => {
@@ -503,7 +528,16 @@ describe('Store', () => {
       s.use(m1)
       s.use(m2)
       s.use(m3)
-      await expect(s.dispatch('fn1')).to.be.rejectedWith('test error')
+
+      let error
+      try {
+        await s.dispatch('fn1')
+      } catch (err) {
+        error = err
+      }
+
+      expect(error).to.be.instanceOf(errors.InternalError)
+      expect(error.getOriginalError().message).to.equal('test error')
       expect(fn1.called).to.equal(false)
       expect(m1.calledOnce).to.equal(true)
       expect(m2.calledOnce).to.equal(true)

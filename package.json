@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "mocha ./test/*.test.js ./test/**/*.test.js",
+    "lint": "standard",
     "docs": "docsify serve ./docs"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "chai-uuid": "^1.0.6",
     "docsify-cli": "^4.2.1",
     "mocha": "^5.1.1",
-    "sinon": "^5.0.7"
+    "sinon": "^5.0.7",
+    "standard": "^11.0.1"
   }
 }

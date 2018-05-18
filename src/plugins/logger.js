@@ -1,4 +1,4 @@
-const ow = require('ow')
+// const ow = require('ow')
 const bunyan = require('bunyan')
 const errors = require('./../errors')
 
@@ -19,7 +19,7 @@ function logger (store, options = {}) {
 }
 
 async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
-  const { cid, seq, method, stack, context } = ctx
+  const { cid, seq, method, stack } = ctx
 
   const methodLog = log.child({
     cid,

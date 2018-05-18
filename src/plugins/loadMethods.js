@@ -8,14 +8,14 @@ function loadMethods (store, options = {}) {
   const fileFilter = options.filter || defaultFilter
 
   const modules = (dir.files(options.path, { sync: true }) || [])
-  .map(filePath => {
-    const relativePath = path.relative(options.path, filePath)
-    const moduleName = path.basename(relativePath, path.extname(relativePath))
-    let namespace = path.dirname(relativePath)
-    namespace = namespace === '.' ? '' : namespace
-    return { filePath, relativePath, moduleName, namespace }
-  })
-  .filter(fileFilter)
+    .map(filePath => {
+      const relativePath = path.relative(options.path, filePath)
+      const moduleName = path.basename(relativePath, path.extname(relativePath))
+      let namespace = path.dirname(relativePath)
+      namespace = namespace === '.' ? '' : namespace
+      return { filePath, relativePath, moduleName, namespace }
+    })
+    .filter(fileFilter)
 
   modules.forEach(({ filePath, relativePath, moduleName, namespace }) => {
     const prefix = namespace === '' ? '' : `${namespace}/`
