@@ -18,7 +18,7 @@ function logger (store, options = {}) {
   }))
 }
 
-async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
+async function logMiddleware ({ log, customData, customLogLevel }, payload, ctx, next) {
   const { cid, seq, method, stack } = ctx
 
   const methodLog = log.child({
@@ -33,7 +33,8 @@ async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
     when: 'inside'
   })
 
-  ctx.log = userLog
+  ctx.log = userLog.child({ when: 'middleware' })
+  ctx.methodContext.log = userLog
 
   const startTime = new Date()
   try {
@@ -41,7 +42,8 @@ async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
       customDataFn: customData,
       customLogLevel,
       when: 'before',
-      ctx
+      ctx,
+      payload
     })
     const result = await next()
     logMethod(methodLog, {
@@ -49,6 +51,7 @@ async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
       customLogLevel,
       when: 'after',
       ctx,
+      payload,
       startTime
     })
     return result
@@ -58,6 +61,7 @@ async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
       customLogLevel,
       when: 'after',
       ctx,
+      payload,
       err,
       startTime
     })
@@ -65,9 +69,9 @@ async function logMiddleware ({ log, customData, customLogLevel }, ctx, next) {
   }
 }
 
-function logMethod (log, { customDataFn, customLogLevel, when, ctx, startTime, err }) {
+function logMethod (log, { customDataFn, customLogLevel, when, ctx, payload, startTime, err }) {
   const elapsedMs = startTime ? new Date().getTime() - startTime.getTime() : undefined
-  const logContext = { when, startTime, err, middlewareContext: ctx }
+  const logContext = { when, startTime, err, middlewareContext: ctx, payload }
   const customData = customDataFn ? customDataFn(logContext) : null
   const logData = {
     ...customData,

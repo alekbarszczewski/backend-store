@@ -339,8 +339,8 @@ describe('Store', () => {
       const meta2 = {}
       s.define('fn1', fn1, meta1)
       s.define('fn2', fn2, meta2)
-      const m1 = sinon.fake((ctx, next) => {
-        return next()
+      const m1 = sinon.fake((payload, ctx, next) => {
+        return next(payload)
       })
       s.use(m1)
       const context = {}
@@ -349,8 +349,8 @@ describe('Store', () => {
       expect(fn1.calledOnce).to.equal(true)
       expect(fn2.calledOnce).to.equal(true)
 
-      const [ctx1, next1] = m1.firstCall.args
-      const [ctx2, next2] = m1.secondCall.args
+      const [payload1, ctx1, next1] = m1.firstCall.args
+      const [payload2, ctx2, next2] = m1.secondCall.args
       const cid = fn1.firstCall.args[1].cid
       const stack = [{
         cid,
@@ -358,26 +358,28 @@ describe('Store', () => {
         method: 'fn1'
       }]
 
+      expect(payload1).to.equal('payload1')
       expect(ctx1.method).to.equal('fn1')
-      expect(ctx1.payload).to.equal('payload1')
       expect(ctx1.context).to.equal(context)
       expect(ctx1.cid).to.equal(cid).and.be.a.uuid('v4')
       expect(ctx1.seq).to.equal(0)
       expect(ctx1.meta).to.equal(meta1)
       expect(ctx1.errors).to.equal(errors)
       expect(ctx1.stack).to.eql(stack)
+      expect(ctx1.methodContext).to.equal(fn1.firstCall.args[1])
       expect(next1).to.be.instanceOf(Function)
 
       stack.push({ cid, seq: 1, method: 'fn2' })
 
+      expect(payload2).to.equal('payload2')
       expect(ctx2.method).to.equal('fn2')
-      expect(ctx2.payload).to.equal('payload2')
       expect(ctx2.context).to.equal(context)
       expect(ctx2.cid).to.equal(cid).and.be.a.uuid('v4')
       expect(ctx2.seq).to.equal(1)
       expect(ctx2.meta).to.equal(meta2)
       expect(ctx2.errors).to.equal(errors)
       expect(ctx2.stack).to.eql(stack)
+      expect(ctx2.methodContext).to.equal(fn2.firstCall.args[1])
       expect(next2).to.be.instanceOf(Function)
     })
 
@@ -385,42 +387,44 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake()
       s.define('fn1', fn1)
-      const m1 = sinon.fake((ctx, next) => {
-        ctx.payload = 'modified1'
-        return next()
+      const m1 = sinon.fake((payload, ctx, next) => {
+        return next('modified1')
       })
-      const m2 = sinon.fake((ctx, next) => {
-        ctx.payload = 'modified2'
-        return next()
+      const m2 = sinon.fake((payload, ctx, next) => {
+        return next('modified2')
       })
       s.use(m1)
       s.use(m2)
       await s.dispatch('fn1', 'original')
       expect(fn1.calledOnce).to.equal(true)
       expect(fn1.firstCall.args[0]).to.equal('modified2')
+      expect(m1.firstCall.args[0]).to.equal('original')
+      expect(m2.firstCall.args[0]).to.equal('modified1')
     })
 
     it('modify payload in middleware #2', async () => {
       const s = new Store()
       const fn1 = sinon.fake()
       s.define('fn1', fn1)
-      const m1 = sinon.fake((ctx, next) => {
-        ctx.payload.counter++
-        return next()
+      const m1 = sinon.fake((payload, ctx, next) => {
+        payload.counter++
+        return next(payload)
       })
       s.use(m1)
-      await s.dispatch('fn1', { counter: 0 })
+      const payload = { counter: 0 }
+      await s.dispatch('fn1', payload)
       expect(fn1.calledOnce).to.equal(true)
       expect(fn1.firstCall.args[0]).to.eql({ counter: 1 })
+      expect(fn1.firstCall.args[0]).to.equal(payload)
     })
 
     it('modify context in middleware', async () => {
       const s = new Store()
       const fn1 = sinon.fake()
       s.define('fn1', fn1)
-      const m1 = sinon.fake((ctx, next) => {
+      const m1 = sinon.fake((payload, ctx, next) => {
         ctx.context.counter++
-        return next()
+        return next(payload)
       })
       s.use(m1)
       await s.dispatch('fn1', null, { counter: 0 })
@@ -432,12 +436,12 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake.resolves(['fn1'])
       s.define('fn1', fn1)
-      const m1 = sinon.fake(async (ctx, next) => {
-        const result = await next()
+      const m1 = sinon.fake(async (payload, ctx, next) => {
+        const result = await next(payload)
         return result.concat(['m1'])
       })
-      const m2 = sinon.fake(async (ctx, next) => {
-        const result = await next()
+      const m2 = sinon.fake(async (payload, ctx, next) => {
+        const result = await next(payload)
         return result.concat(['m2'])
       })
       s.use(m1)
@@ -470,7 +474,7 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake.resolves()
       s.define('fn1', fn1)
-      s.use(async (ctx, next) => {
+      s.use(async (payload, ctx, next) => {
         await next()
         await next()
       })
@@ -489,10 +493,10 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake.resolves()
       s.define('fn1', fn1)
-      s.use(async (ctx, next) => {
+      s.use(async (payload, ctx, next) => {
         await next()
       })
-      const m2 = sinon.fake(async (ctx, next) => {
+      const m2 = sinon.fake(async (payload, ctx, next) => {
         await next()
         await next()
       })
@@ -516,13 +520,13 @@ describe('Store', () => {
       const s = new Store()
       const fn1 = sinon.fake.resolves()
       s.define('fn1', fn1)
-      const m1 = sinon.fake(async (ctx, next) => {
+      const m1 = sinon.fake(async (payload, ctx, next) => {
         await next()
       })
-      const m2 = sinon.fake(async (ctx, next) => {
+      const m2 = sinon.fake(async (payload, ctx, next) => {
         throw new Error('test error')
       })
-      const m3 = sinon.fake(async (ctx, next) => {
+      const m3 = sinon.fake(async (payload, ctx, next) => {
         await next()
       })
       s.use(m1)

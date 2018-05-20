@@ -74,43 +74,49 @@ class Store {
     }
 
     const middlewareContext = {
+      dispatch: (name, payload) => {
+        return this._dispatch(name, payload, context, { ...options, middleware: true }, stack)
+      },
       method: name,
-      payload,
+      // payload,
       context,
       cid,
       seq,
       meta,
       errors,
-      stack
+      stack,
+      methodContext
     }
 
-    const middlewares = this.middleware.map(middleware => {
-      return middleware.bind(null, middlewareContext)
-    })
+    // const middlewares = this.middleware.map(middleware => {
+    //   return middleware.bind(null, middlewareContext)
+    // })
+
+    const middlewares = this.middleware.map(middleware => middleware.bind(null))
     const next = getNext(middlewares, fn, { middlewareContext, methodContext })
-    return next()
+    return next(payload)
   }
 }
 
-function getNext (middlewares, fn, { middlewareContext, methodContext }) {
+function getNext (middlewares, fn, { middlewareContext }) {
   let nextCalled = false
   if (middlewares.length) {
     const middleware = middlewares.shift()
-    return async () => {
+    return async (payload) => {
       if (nextCalled) {
         throw new Error('next() called more than once')
       }
       nextCalled = true
-      const next = getNext(middlewares, fn, { middlewareContext, methodContext })
-      return middleware(next)
+      const next = getNext(middlewares, fn, { middlewareContext })
+      return middleware(payload, middlewareContext, next)
     }
   } else {
-    return async () => {
+    return async (payload) => {
       if (nextCalled) {
         throw new Error('next() called more than once')
       }
       nextCalled = true
-      return fn(middlewareContext.payload, methodContext)
+      return fn(payload, middlewareContext.methodContext)
     }
   }
 }

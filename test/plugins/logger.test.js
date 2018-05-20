@@ -11,18 +11,19 @@ chai.use(require('chai-uuid'))
 chai.use(require('chai-as-promised'))
 const expect = chai.expect
 
-const defaultLogCheck = (log, { cid, before, method, logName = 'app', level = 30, seq = 0, source = 'auto', stack }) => {
+const defaultLogCheck = (log, { cid, when = 'before', method, logName = 'app', level = 30, seq = 0, source = 'auto', stack }) => {
   expect(log.cid).to.be.a.uuid('v4').and.to.equal(cid)
   expect(log.hostname).to.be.a('string')
   expect(log.level).to.equal(level)
   expect(log.method).to.equal(method)
-  if (before) {
-    expect(log.when).to.equal('before')
+  expect(log.when).to.equal(when)
+
+  if (when === 'before') {
     expect(log.msg.indexOf(`before_${method}`)).to.equal(0)
-  } else {
-    expect(log.when).to.equal('after')
+  } else if (when === 'after') {
     expect(log.msg.indexOf(`after_${method}`)).to.equal(0)
   }
+
   expect(log.v).to.equal(0)
   expect(log.pid).to.be.a('number')
   expect(log.seq).to.equal(seq)
@@ -59,14 +60,14 @@ describe('plugins/logger', () => {
       method: 'fn1'
     }]
     defaultLogCheck(lines[0], {
-      before: true,
+      when: 'before',
       method: 'fn1',
       cid,
       seq: 0,
       stack
     })
     defaultLogCheck(lines[1], {
-      before: false,
+      when: 'after',
       method: 'fn1',
       cid,
       seq: 0,
@@ -95,7 +96,7 @@ describe('plugins/logger', () => {
         method: 'fn' + (index + 1)
       })
       defaultLogCheck(lines[index], {
-        before: true,
+        when: 'before',
         method: fn,
         cid,
         seq: index,
@@ -108,7 +109,7 @@ describe('plugins/logger', () => {
       const lineIndex = index + 3
       const seq = 2 - index
       defaultLogCheck(lines[lineIndex], {
-        before: false,
+        when: 'after',
         method: fn,
         cid,
         seq,
@@ -131,7 +132,7 @@ describe('plugins/logger', () => {
       method: 'fn1'
     }]
     defaultLogCheck(lines[0], {
-      before: true,
+      when: 'before',
       method: 'fn1',
       cid,
       seq: 0,
@@ -139,7 +140,7 @@ describe('plugins/logger', () => {
       logName: 'abc'
     })
     defaultLogCheck(lines[1], {
-      before: false,
+      when: 'after',
       method: 'fn1',
       cid,
       seq: 0,
@@ -161,14 +162,14 @@ describe('plugins/logger', () => {
       method: 'fn1'
     }]
     defaultLogCheck(lines[0], {
-      before: true,
+      when: 'before',
       method: 'fn1',
       cid,
       seq: 0,
       stack
     })
     defaultLogCheck(lines[1], {
-      before: false,
+      when: 'after',
       method: 'fn1',
       cid,
       seq: 0,
@@ -180,7 +181,239 @@ describe('plugins/logger', () => {
     expect(lines[1].src).to.be.a('object')
   })
 
-  it('custom data')
-  it('custom log level')
-  it('log in context')
+
+  it('support customData option', async function () {
+    const spy = sinon.fake(({ middlewareContext }) => {
+      return {
+        someOption: 'abc',
+        methodName: middlewareContext.method
+      }
+    })
+    const middleware = sinon.fake((payload, ctx, next) => next(payload))
+    this.s.use(middleware)
+    this.s.plugin(logger, {
+      customData: spy
+    })
+    this.s.define('fn1', () => {})
+    await this.s.dispatch('fn1')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      when: 'before',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+    defaultLogCheck(lines[1], {
+      when: 'after',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+    expect(lines[0].someOption).to.equal('abc')
+    expect(lines[0].methodName).to.equal('fn1')
+    expect(lines[1].someOption).to.equal('abc')
+    expect(lines[1].methodName).to.equal('fn1')
+
+    const middlewareCtx = middleware.firstCall.args[1]
+    expect(spy.calledTwice).to.equal(true)
+
+    const logCtx1 = spy.firstCall.args[0]
+    const logCtx2 = spy.secondCall.args[0]
+
+    expect(logCtx1.when).to.equal('before')
+    expect(logCtx1.err).to.equal(undefined)
+    expect(logCtx1.middlewareContext).to.equal(middlewareCtx)
+    // TODO startTime
+
+    expect(logCtx2.when).to.equal('after')
+    expect(logCtx2.err).to.equal(undefined)
+    expect(logCtx2.middlewareContext).to.equal(middlewareCtx)
+    // TODO startTime
+  })
+
+  it('support customData option with err', async function () {
+    const spy = sinon.fake(({ middlewareContext }) => {
+      return {
+        someOption: 'abc',
+        methodName: middlewareContext.method
+      }
+    })
+    const middleware = sinon.fake((payload, ctx, next) => next(payload))
+    this.s.use(middleware)
+    this.s.plugin(logger, {
+      customData: spy
+    })
+    const error = new Error('abc')
+    this.s.define('fn1', () => {
+      throw error
+    })
+    try {
+      await this.s.dispatch('fn1')
+    } catch (err) {
+    }
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      when: 'before',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+    defaultLogCheck(lines[1], {
+      when: 'after',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 50
+    })
+    expect(lines[0].someOption).to.equal('abc')
+    expect(lines[0].methodName).to.equal('fn1')
+    expect(lines[1].someOption).to.equal('abc')
+    expect(lines[1].methodName).to.equal('fn1')
+
+    const middlewareCtx = middleware.firstCall.args[1]
+    expect(spy.calledTwice).to.equal(true)
+
+    const logCtx1 = spy.firstCall.args[0]
+    const logCtx2 = spy.secondCall.args[0]
+
+    expect(logCtx1.when).to.equal('before')
+    expect(logCtx1.err).to.equal(undefined)
+    expect(logCtx1.middlewareContext).to.equal(middlewareCtx)
+    // TODO startTime
+
+    expect(logCtx2.when).to.equal('after')
+    expect(logCtx2.err).to.equal(error)
+    expect(logCtx2.middlewareContext).to.equal(middlewareCtx)
+    // TODO startTime
+  })
+
+  it('support customLogLevel option', async function () {
+    const spy = sinon.fake(({ middlewareContext }) => {
+      return 'warn'
+    })
+    const middleware = sinon.fake((payload, ctx, next) => next(payload))
+    this.s.use(middleware)
+    this.s.plugin(logger, {
+      customLogLevel: spy
+    })
+    this.s.define('fn1', () => {})
+    await this.s.dispatch('fn1')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      when: 'before',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 40
+    })
+    defaultLogCheck(lines[1], {
+      when: 'after',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 40
+    })
+
+    const middlewareCtx = middleware.firstCall.args[1]
+    expect(spy.calledTwice).to.equal(true)
+
+    const logCtx1 = spy.firstCall.args[0]
+    const logCtx2 = spy.secondCall.args[0]
+
+    expect(logCtx1.when).to.equal('before')
+    expect(logCtx1.err).to.equal(undefined)
+    expect(logCtx1.middlewareContext).to.equal(middlewareCtx)
+    // TODO startTime
+
+    expect(logCtx2.when).to.equal('after')
+    expect(logCtx2.err).to.equal(undefined)
+    expect(logCtx2.middlewareContext).to.equal(middlewareCtx)
+    // TODO startTime
+  })
+
+  it('log in method and middleware', async function () {
+    this.s.plugin(logger)
+    const middleware = sinon.fake((payload, ctx, next) => {
+      ctx.log.warn('Msg from middleware')
+      next(payload)
+    })
+    this.s.use(middleware)
+    this.s.define('fn1', (payload, { log }) => {
+      log.warn({ some: 'data' }, 'Some message')
+    })
+    await this.s.dispatch('fn1')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(4)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+
+    defaultLogCheck(lines[0], {
+      when: 'before',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+
+    defaultLogCheck(lines[1], {
+      when: 'middleware',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 40,
+      source: 'user'
+    })
+
+    defaultLogCheck(lines[2], {
+      when: 'inside',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 40,
+      source: 'user'
+    })
+    expect(lines[2].some).to.equal('data')
+    expect(lines[2].msg).to.equal('Some message')
+
+    defaultLogCheck(lines[3], {
+      when: 'after',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+  })
 })
