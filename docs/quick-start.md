@@ -84,12 +84,25 @@ and can be used by plugins and middlewares.
 
 **Example**
 ```js
-store.defineMethod('api/createPost', async (payload, ctx) => {
+store.defineMethod('api/createPost', async (payload, methodContext) => {
   ...
 }, { customData: 123 })
 ```
 
 #### Method context
+
+Method context is an object passed to executed method along with a payload argument.
+It consists of following properties:
+
+| Property | Type     | Description
+|----------|----------|------------
+| context  | any      | User defined context passed to `store.dispatch(method, payload, context)`
+| cid      | any      | Chain id is id of current execution chain (it defaults to UUID string but it may be customised by user)
+| seq      | integer  | Sequence number of executed method (0, 1, 2, ...)
+| meta     | any      | Meta data of executed method
+| error    | object   | Application errors dictionary
+| stack    | array    | Current method call stack
+| dispatch | function | Function to execute other method defined in store (`dispatch(method, payload)`)
 
 ## Dispatch methods
 
