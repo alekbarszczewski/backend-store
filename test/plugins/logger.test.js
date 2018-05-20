@@ -11,8 +11,8 @@ chai.use(require('chai-uuid'))
 chai.use(require('chai-as-promised'))
 const expect = chai.expect
 
-const defaultLogCheck = (log, { before, method, logName = 'app', level = 30 }) => {
-  expect(log.cid).to.be.a.uuid('v4')
+const defaultLogCheck = (log, { cid, before, method, logName = 'app', level = 30, seq = 0, source = 'auto', stack }) => {
+  expect(log.cid).to.be.a.uuid('v4').and.to.equal(cid)
   expect(log.hostname).to.be.a('string')
   expect(log.level).to.equal(level)
   expect(log.method).to.equal(method)
@@ -21,23 +21,15 @@ const defaultLogCheck = (log, { before, method, logName = 'app', level = 30 }) =
     expect(log.msg.indexOf(`before_${method}`)).to.equal(0)
   } else {
     expect(log.when).to.equal('after')
-    expect(log.msg.indexOf(`aftere_${method}`)).to.equal(0)
+    expect(log.msg.indexOf(`after_${method}`)).to.equal(0)
   }
   expect(log.v).to.equal(0)
-  expect(log.pid).to.be.a('integer')
+  expect(log.pid).to.be.a('number')
+  expect(log.seq).to.equal(seq)
+  expect(log.source).to.equal(source)
+  expect(log.stack).to.eql(stack)
+  // TODO time
 }
-
-//      -    "pid": 26186
-//      -    "seq": 0
-//      -    "source": "auto"
-//      -    "stack": [
-//      -      {
-//      -        "cid": "8b003512-eb9e-40bf-bd1b-5b5c2f45f5d1"
-//      -        "method": "fn1"
-//      -        "seq": 0
-//      -      }
-//      -    ]
-//      -    "time": "2018-05-18T21:41:03.733Z"
 
 describe('plugins/logger', () => {
 
@@ -60,11 +52,72 @@ describe('plugins/logger', () => {
     await this.s.dispatch('fn1', payload, context)
     const lines = this.getLog()
     expect(lines.length).to.equal(2)
-    defaultLogCheck(lines[0])
-    defaultLogCheck(lines[1])
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      before: true,
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+    defaultLogCheck(lines[1], {
+      before: false,
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
   })
 
-  it('log nested methods')
+  it('log nested methods', async function () {
+    this.s.plugin(logger)
+    this.s.define('fn1', (payload, { dispatch }) => dispatch('fn2'))
+    this.s.define('fn2', (payload, { dispatch }) => dispatch('fn3'))
+    this.s.define('fn3', () => {})
+    const payload = { title: 'abc' }
+    const context = { user: 123 }
+    await this.s.dispatch('fn1', payload, context)
+    const lines = this.getLog()
+    expect(lines.length).to.equal(6)
+    const cid = lines[0].cid
+    const stack = []
+
+    const beforeFns = ['fn1', 'fn2', 'fn3']
+    beforeFns.forEach((fn, index) => {
+      stack.push({
+        cid,
+        seq: index,
+        method: 'fn' + (index + 1)
+      })
+      defaultLogCheck(lines[index], {
+        before: true,
+        method: fn,
+        cid,
+        seq: index,
+        stack
+      })
+    })
+
+    const afterFns = ['fn3', 'fn2', 'fn1']
+    afterFns.forEach((fn, index) => {
+      const lineIndex = index + 3
+      const seq = 2 - index
+      defaultLogCheck(lines[lineIndex], {
+        before: false,
+        method: fn,
+        cid,
+        seq,
+        stack
+      })
+      stack.pop()
+    })
+  })
+
   it('name option')
   it('bunyan options')
   it('custom data')
