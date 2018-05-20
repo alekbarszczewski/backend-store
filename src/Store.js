@@ -74,11 +74,7 @@ class Store {
     }
 
     const middlewareContext = {
-      dispatch: (name, payload) => {
-        return this._dispatch(name, payload, context, { ...options, middleware: true }, stack)
-      },
       method: name,
-      // payload,
       context,
       cid,
       seq,
