@@ -118,8 +118,68 @@ describe('plugins/logger', () => {
     })
   })
 
-  it('name option')
-  it('bunyan options')
+  it('support name option', async function () {
+    this.s.plugin(logger, { name: 'abc' })
+    this.s.define('fn1', () => {})
+    await this.s.dispatch('fn1')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      before: true,
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      logName: 'abc'
+    })
+    defaultLogCheck(lines[1], {
+      before: false,
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      logName: 'abc'
+    })
+  })
+
+  it('support bunyan option', async function () {
+    this.s.plugin(logger, { bunyan: { customOption: 123, src: true } })
+    this.s.define('fn1', () => {})
+    await this.s.dispatch('fn1')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      before: true,
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+    defaultLogCheck(lines[1], {
+      before: false,
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+    expect(lines[0].customOption).to.equal(123)
+    expect(lines[1].customOption).to.equal(123)
+    expect(lines[0].src).to.be.a('object')
+    expect(lines[1].src).to.be.a('object')
+  })
+
   it('custom data')
   it('custom log level')
   it('log in context')
