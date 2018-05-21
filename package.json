@@ -6,7 +6,11 @@
   "scripts": {
     "test": "mocha ./test/*.test.js ./test/**/*.test.js",
     "lint": "standard",
-    "docs": "docsify serve ./docs"
+    "docs": "docsify serve ./docs",
+    "prepublish": "yarn test && yarn lint"
+  },
+  "engines": {
+    "node": ">= 8.x"
   },
   "dependencies": {
     "bunyan": "^1.8.12",

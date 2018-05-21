@@ -2,7 +2,6 @@
 
 const chai = require('chai')
 const sinon = require('sinon')
-const path = require('path')
 const CaptureStdout = require('capture-stdout')
 const Store = require('./../../src/Store')
 const logger = require('./../../src/plugins/logger')
@@ -33,7 +32,6 @@ const defaultLogCheck = (log, { cid, when = 'before', method, logName = 'app', l
 }
 
 describe('plugins/logger', () => {
-
   beforeEach(function () {
     this.s = new Store()
     this.capture = new CaptureStdout()
@@ -180,7 +178,6 @@ describe('plugins/logger', () => {
     expect(lines[0].src).to.be.a('object')
     expect(lines[1].src).to.be.a('object')
   })
-
 
   it('support customData option', async function () {
     const spy = sinon.fake(({ middlewareContext }) => {
