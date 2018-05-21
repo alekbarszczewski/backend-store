@@ -2,7 +2,7 @@
 
 Work in progress.
 
-Docs available here: .
+Docs available here: https://alekbarszczewski.github.io/backend-store.
 
 # TODO
 
