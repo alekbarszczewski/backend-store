@@ -1,6 +1,6 @@
 * [Overview](/)
 * [Quick Start](quick-start.md)
-* [Reference](reference.md)
+* Reference
   * [Store](store.md)
   * [AppError](app-error.md)
 * [Plugins](plugins.md)

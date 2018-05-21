@@ -16,7 +16,7 @@ Define new method in the store.
 | Argument | Type       | Description
 |----------|------------|------------
 | name     | `string`   | Method name.
-| fn       | `function` | [Method function](/method-function.md)
+| fn       | `function` | [Method function](/store.md?id=method-function)
 | [meta]   | `any`      | User-defined meta data related to that method. It may be used by plugin, middleware or by the method itself.
 
 **Return**:
@@ -47,8 +47,8 @@ store.define('b/', ...)
 store.define('a b c', ...)
 ```
 
-"fn" argument must be a function that takes two arguments: payload and [methodContext](/method-context.md).
-It may return any value or Promise<any>. Method function is described in details here: [Method function](/method-function.md).
+"fn" argument must be a function that takes two arguments: payload and [methodContext](/store.md?id=method-context).
+It may return any value or Promise<any>. Method function is described in details here: [Method function](/store.md?id=method-function).
 
 "meta" argument is optional and it is used to associate some user-defined meta data with a defined function.
 It may be used by plugin (see plugins), by middleware (see middlewareContext) or by method itself (see methodContext).
@@ -104,7 +104,7 @@ const myMiddleware = async (payload, middlewareContext, next) => {
 store.use(myMiddleware)
 ```
 
-Middleware function is described in details here: [Middleware function](/middleware-function.md).
+Middleware function is described in details here: [Middleware function](/store.md?id=middleware-function).
 
 ## #plugin(fn, options)
 
@@ -145,7 +145,7 @@ const myPlugin = (store, options = {}) => {
 store.plugin(myPlugin, { log: true })
 ```
 
-Plugin function is described in details here: [Plugin function](/plugin-function.md).
+Plugin function is described in details here: [Plugin function](/store.md?id=plugin-function).
 
 ## #dispatch(method, payload, context, options)
 
