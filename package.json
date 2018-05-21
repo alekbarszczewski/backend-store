@@ -9,6 +9,10 @@
     "docs": "docsify serve ./docs",
     "prepublish": "yarn test && yarn lint"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alekbarszczewski/backend-store"
+  },
   "engines": {
     "node": ">= 8.x"
   },
