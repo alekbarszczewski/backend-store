@@ -2,7 +2,7 @@
 * [Quick Start](quick-start.md)
 * [Reference](reference.md)
   * [Store](store.md)
-  * [errors](errors.md)
+  * [AppError](app-error.md)
 * [Plugins](plugins.md)
   * [loadMethods](/)
   * [logger](/)

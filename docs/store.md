@@ -165,6 +165,10 @@ Executes method in the store.
 
 `Promise<any>` - result of method function
 
+!> Please note: error thrown from call chain is automatically wrapped with `errors.InternalError`.
+Original error is available with `err.getOriginalError()`.
+Error wrapping is implemented to avoid accidentaly leak callstack or error message to enduser.
+
 **Description**:
 
 It executes given method along with all middleware defined in the store.
@@ -194,6 +198,17 @@ await store.dispatch('api/createPost', {
 }, {
   user: { id: 1, role: 'admin' }
 }, { cid: '<call_chain_id>' })
+
+// catch error
+try {
+  await store.dispatch('myMethod')
+} catch (err) {
+  // err is always instance of AppError
+  const originalError = err.getOriginalError() // for logging for example
+  const dataForUser = err.toJSON()
+
+  // return dataForUser as a result of rest api request or graphql api request
+}
 ```
 
 ## Method function
@@ -303,8 +318,211 @@ store.define('myMethod3', async (payload, methodContext) => {
 store.dispatch('myMethod1')
 ```
 
+**meta**
+
+User-defined method meta data (defined in `Store#define`).
+
+**errors**
+
+[Errors dictionary](store.md?id=errors).
+
+```js
+store.define('auth/requireAdmin', (payload, methodContext) => {
+  const { context, errors } = methodContext
+  if (!context || !context.user) {
+    throw new errors.AuthenticationError()
+  } else if (context.user.role !== 'admin') {
+    throw new errors.AuthorizationError()
+  }
+})
+```
+
+**stack**
+
+Call chain method execution stack. It is an array of following objects:
+```js
+{ cid: "<cid>", seq: "<seq>", method: "<method_name>" }
+```
+
+```js
+store.define('myMethod1', async (payload, methodContext) => {
+  const { stack } = methodContext
+  /*
+    stack = [
+      { cid, seq: 0, method: 'myMethod1' }
+    ]
+  */
+  await dispatch('myMethod2')
+})
+
+store.define('myMethod2', async (payload, methodContext) => {
+  const { stack } = methodContext
+  /*
+    stack = [
+      { cid, seq: 0, method: 'myMethod1' },
+      { cid, seq: 1, method: 'myMethod2' }
+    ]
+  */
+  await dispatch('myMethod3')
+})
+
+store.define('myMethod3', async (payload, methodContext) => {
+  const { stack } = methodContext
+  /*
+    stack = [
+      { cid, seq: 0, method: 'myMethod1' },
+      { cid, seq: 1, method: 'myMethod2' },
+      { cid, seq: 2, method: 'myMethod3' }
+    ]
+  */
+})
+
+store.dispatch('myMethod1')
+```
+
 ## Middleware function
+
+`(payload, middlewareContext, next) => (any | Promise<any>)`
+
+**Arguments**:
+
+| Argument          | Type       | Description
+|-------------------|------------|------------
+| payload           | `any`      | Payload passed to method
+| middlewareContext | `object`   | [Middleware context](/store.md)
+| next              | `function` | Next function to call next middleware(s) and method itself
+
+**Return**:
+
+Any value or Promise of any value.
+
+**next**
+
+Function of type `(payload) => Promise<any>`.
+
+!> To pass payload to next middleware(s) and to method itself always pass "payload" to "next" function
+
+!> To pass result to parent middlewares and to `Store#dispatch` always return result from middleware
+
+```js
+store.use(async (payload, middlewareContext, next) => {
+  // do something before
+
+  // you must pass payload to other middleware(s) and method explicitly
+  // you can also modify payload here or replace it completely by passing something else to next
+  // you can also skip calling next to prevent method to be dispatched
+  const result = await next(payload)
+
+  // do something after
+
+  // you must return result explicitly
+  // you can also modify result or replace it completely by returning something else
+  return result
+})
+```
 
 ## Middleware context
 
+Middleware context is passed as second argument (along with payload and next) to middleware function.
+
+| Property        | Type       | Description
+|-----------------|------------|----------------------------
+| method          | `string`   | Name of method before which middleware is executed.
+| context         | `any`      | User-defined context passed to `Store#dispatch`.
+| cid             | `string`   | Call chain id. Defaults to random UUID.
+| seq             | `integer`  | Call chain method sequence number.
+| meta            | `any`      | User-defined method meta data.
+| errors          | `object`   | Errors dictionary.
+| stack           | `array`    | Call chain stack.
+| methodContext   | `object`   | [Method context](/store.md?id=method-context)
+
+It's pretty much the same as [Method context](/store.md?id=method-context) with following differences:
+
+* It has no "dispatch" property
+* It has "method" property
+* It has "methodContext" property
+
+"methodContext" property may be used to add some fields / methods to it to be available for method itself.
+
 ## Plugin function
+
+`(store, options) => any`
+
+**Arguments**:
+
+| Argument          | Type       | Description
+|-------------------|------------|------------
+| store             | `Store`    | Store instance
+| options           | `any`      | Plugin options
+
+**Return**:
+
+Any value.
+
+```js
+const myPlugin = (store, options = {}) => {
+  if (options.log) {
+    store.use(async (payload, middlewareContext, next) => {
+      console.log(`before ${middlewareContext.method}`)
+      try {
+        await next(payload)
+        console.log(`after ${middlewareContext.method}`)
+      } catch (err) {
+        console.error(`error ${middlewareContext.method}`)
+      }
+    })
+  }
+}
+
+store.plugin(myPlugin, { log: true })
+```
+
+## Errors
+
+Errors is a dictionary of useful application errors.
+All errors inherit from [AppError](/app-error.md).
+
+Each error has following properties:
+
+* **message** - error message
+* **type** - error type
+* **severity** - error severity
+* **statusCode** - HTTP statusCode (as a helper if you are implementing REST API)
+* **err** - original error
+* **data** - custom error data
+* **reasons** - error reasons, especially for ValidationError
+
+| Property            | type           | severity | statusCode | Description
+|---------------------|----------------|----------|------------|----------------
+| AppError            | internal       | error    | 500        | Base class for all errors.
+| AuthenticationError | authentication | warning  | 401        | Throw when not logged in user requests resource that requires authentication.
+| AuthorizationError  | authorization  | warning  | 403        | Throw when logged in user requests resource that he is not authorized to.
+| InternalError       | internal       | error    | 500        | Throw internal / critical error
+| NotFoundError       | notFound       | warning  | 404        | Throw when requested resource is not found
+| NotImplementedError | notImplemented | error    | 503        | Throw when some part of application is not implemented
+| ValidationError     | validation     | warning  | 400        | Throw on any validation error
+
+```js
+// Examples
+
+throw new errors.AuthenticationError({ message: 'You have to log in first', data: customData })
+throw new errors.AuthorizationError({ message: 'Only admin can create posts', data: customData })
+
+throw new errors.InternalError({
+  message: 'Something bad happened',
+  data: customData,
+  err: originalError
+})
+
+throw new errors.NotFoundError({ message: 'User not found', data: customData })
+throw new errors.NotImplementedError({ message: 'This method is not implemented yet', data: customData })
+
+throw new errors.ValidationError({
+  message: 'Invalid username and phone number',
+  data: customData
+})
+.addReason({ path: 'username', message: 'Minimum 3 characters' })
+.addReason({ path: 'phone', message: 'Invalid phone number' })
+```
+
+For detailed documentation of please reference [AppError](/app-error.md).
