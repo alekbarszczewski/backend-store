@@ -1,9 +1,12 @@
 # Store
 
-## #constructor
 ```js
 import { Store } from 'backend-store'
+// or const { Store } = require('backend-store')
+```
 
+## #constructor
+```js
 const store = new Store() // takes no args
 ```
 
@@ -51,7 +54,7 @@ store.define('a b c', ...)
 It may return any value or Promise<any>. Method function is described in details here: [Method function](/store.md?id=method-function).
 
 "meta" argument is optional and it is used to associate some user-defined meta data with a defined function.
-It may be used by plugin (see plugins), by middleware (see middlewareContext) or by method itself (see methodContext).
+It may be used by plugin (see [Store#plugin](/store.md?id=pluginfn-options)), by middleware (see [middlewareContext](/store.md?id=middleware-context)) or by method itself (see [methodContext](/store.md?id=method-context)).
 
 **Example**:
 
@@ -72,7 +75,7 @@ Add new middleware to store.
 
 | Argument | Type       | Description
 |----------|------------|------------
-| fn       | `function` | [Middleware function](/middleware-function.md)
+| fn       | `function` | [Middleware function](/store.md?id=middleware-function)
 
 **Return**:
 
@@ -114,7 +117,7 @@ Use a plugin on store instance.
 
 | Argument  | Type       | Description
 |-----------|------------|------------
-| fn        | `function` | [Plugin function](/plugin-function.md)
+| fn        | `function` | [Plugin function](/store.md?plugin-function)
 | [options] | `any`      | Plugin options passed to plugin function along with store instance
 
 **Return**:
@@ -237,7 +240,7 @@ Method context is passed as second argument (along with payload) to any executed
 | cid             | `string`   | Call chain id. Defaults to random UUID.
 | seq             | `integer`  | Call chain method sequence number.
 | meta            | `any`      | User-defined method meta data.
-| errors          | `object`   | Errors dictionary.
+| errors          | `object`   | [Errors](/errors.md) dictionary.
 | stack           | `array`    | Call chain stack.
 
 **dispatch**
@@ -324,7 +327,7 @@ User-defined method meta data (defined in `Store#define`).
 
 **errors**
 
-[Errors dictionary](store.md?id=errors).
+[Errors dictionary](errors.md).
 
 ```js
 store.define('auth/requireAdmin', (payload, methodContext) => {
@@ -432,7 +435,7 @@ Middleware context is passed as second argument (along with payload and next) to
 | cid             | `string`   | Call chain id. Defaults to random UUID.
 | seq             | `integer`  | Call chain method sequence number.
 | meta            | `any`      | User-defined method meta data.
-| errors          | `object`   | Errors dictionary.
+| errors          | `object`   | [Errors](/errors.md) dictionary.
 | stack           | `array`    | Call chain stack.
 | methodContext   | `object`   | [Method context](/store.md?id=method-context)
 
@@ -476,53 +479,3 @@ const myPlugin = (store, options = {}) => {
 
 store.plugin(myPlugin, { log: true })
 ```
-
-## Errors
-
-Errors is a dictionary of useful application errors.
-All errors inherit from [AppError](/app-error.md).
-
-Each error has following properties:
-
-* **message** - error message
-* **type** - error type
-* **severity** - error severity
-* **statusCode** - HTTP statusCode (as a helper if you are implementing REST API)
-* **err** - original error
-* **data** - custom error data
-* **reasons** - error reasons, especially for ValidationError
-
-| Property            | type           | severity | statusCode | Description
-|---------------------|----------------|----------|------------|----------------
-| AppError            | internal       | error    | 500        | Base class for all errors.
-| AuthenticationError | authentication | warning  | 401        | Throw when not logged in user requests resource that requires authentication.
-| AuthorizationError  | authorization  | warning  | 403        | Throw when logged in user requests resource that he is not authorized to.
-| InternalError       | internal       | error    | 500        | Throw internal / critical error
-| NotFoundError       | notFound       | warning  | 404        | Throw when requested resource is not found
-| NotImplementedError | notImplemented | error    | 503        | Throw when some part of application is not implemented
-| ValidationError     | validation     | warning  | 400        | Throw on any validation error
-
-```js
-// Examples
-
-throw new errors.AuthenticationError({ message: 'You have to log in first', data: customData })
-throw new errors.AuthorizationError({ message: 'Only admin can create posts', data: customData })
-
-throw new errors.InternalError({
-  message: 'Something bad happened',
-  data: customData,
-  err: originalError
-})
-
-throw new errors.NotFoundError({ message: 'User not found', data: customData })
-throw new errors.NotImplementedError({ message: 'This method is not implemented yet', data: customData })
-
-throw new errors.ValidationError({
-  message: 'Invalid username and phone number',
-  data: customData
-})
-.addReason({ path: 'username', message: 'Minimum 3 characters' })
-.addReason({ path: 'phone', message: 'Invalid phone number' })
-```
-
-For detailed documentation of please reference [AppError](/app-error.md).
