@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+
 const chai = require('chai')
 const { Store, errors, __esModule: __esModule1 } = require('./../index')
 const Store2 = require('./../src/Store')
@@ -6,8 +8,8 @@ const logger = require('./../plugins/logger')
 const loadMethods = require('./../plugins/loadMethods')
 const logger2 = require('./../src/plugins/logger')
 const loadMethods2 = require('./../src/plugins/loadMethods')
-const { __esModule: __esModule2 } = require('./../plugins/logger')
-const { __esModule: __esModule3 } = require('./../plugins/loadMethods')
+// const { __esModule: __esModule2 } = require('./../plugins/logger')
+// const { __esModule: __esModule3 } = require('./../plugins/loadMethods')
 
 const expect = chai.expect
 
