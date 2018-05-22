@@ -44,6 +44,7 @@ describe('plugins/loadMethods', () => {
     }
     const checkCall = calls.find(({ relativePath }) => relativePath === 'nested1/nested2/test3.js')
     expect(checkCall.relativePath).to.equal('nested1/nested2/test3.js')
+    expect(checkCall.fileName).to.equal('test3.js')
     expect(checkCall.moduleName).to.equal('test3')
     expect(checkCall.namespace).to.equal('nested1/nested2')
     expect(checkCall.filePath.indexOf(checkCall.relativePath)).to.not.equal(-1)

@@ -11,9 +11,10 @@ function loadMethods (store, options = {}) {
     .map(filePath => {
       const relativePath = path.relative(options.path, filePath)
       const moduleName = path.basename(relativePath, path.extname(relativePath))
+      const fileName = path.basename(relativePath)
       let namespace = path.dirname(relativePath)
       namespace = namespace === '.' ? '' : namespace
-      return { filePath, relativePath, moduleName, namespace }
+      return { filePath, fileName, relativePath, moduleName, namespace }
     })
     .filter(fileFilter)
 
