@@ -319,3 +319,85 @@ The console output will be:
   "v":0
 }
 ```
+
+
+## Options
+
+| Option           | Type       | Description
+|------------------|------------|--------------------------
+| [name]           | `string`   | Logger name passed to bunyan.createLogger(...). Defaults to `"app"`.
+| [bunyan]         | `object`   | Other options passed to bunyan.createLogger(...).
+| [customData]     | `function` | Function to log some extra data
+| [customLogLevel] | `function` | Function to customise bunyan log level
+
+**customData**
+
+Function of type `(LogContext) => object`.
+Whenever something is logged this functions is executed with [LogConext](/logger.md?id=log-context).
+It must return object which properties will be added to log data.
+
+```js
+// example
+
+store.plugin(logger, {
+  customData ({ err, middlewareContext: { meta, context } }) {
+    const customData = {}
+    // add user to custom log data
+    customData.user = context ? context.user : null
+
+    if (err && err.some && err.some.property) {
+      // add some property of err to custom data
+      customData.someProperty = err.some.property
+    }
+    return customData
+  }
+})
+```
+
+**customLogLevel**
+
+Function of type `(LogContext) => string | null`.
+Whenever something is logged this functions is executed with [LogConext](/logger.md?id=log-context).
+It must return bunyan log level which will be used to log in this case or it might return something that evaluates to false - in such case default log level will be used (see below).
+For list of all bunyan log levels please refer [here](https://github.com/trentm/node-bunyan#levels).
+
+
+Default log level is determined in following way:
+
+* when logContext.err is NOT present then "info" log level is used
+* when logContext.err is present then
+  * if logContext.err is instanceof AppError then
+    * if logContext.err.severity is "error" then "error" log level is used
+    * if logContext.err.severity is "warning" then "warn" log level is used
+  * if logContext.err is NOT instanceof AppError then "error" log level is used
+
+```js
+// example
+
+store.plugin(logger, {
+  customLogLevel ({ err, middlewareContext: { meta } }) {
+    if (err) {
+      // if error occured always use "error" log level
+      return 'error'
+    } else if (meta && meta.debug) {
+      // if executed method has debug flag in it's meta data then use "debug" log level
+      return 'debug'
+    } else {
+      // use default log level
+      return null
+    }
+  }
+})
+```
+
+## Log context
+
+Log context is passed to [customData](/logger.md?id=options) and [customLogLevel](/logger.md?id=options) functions.
+
+| Property          | Type                | Description
+|-------------------|---------------------|----------------------------------------------
+| when              | `string`            | "before" or "inside" or "after"
+| startTime         | `Date`              | Date instance
+| err               | `Error`             | Error if occured (may be null)
+| middlewareContext | `MiddlewareContext` | [MiddlewareContext](/store.md?id=middleware-context)
+| payload           | `any`               | Payload passed to executed method
