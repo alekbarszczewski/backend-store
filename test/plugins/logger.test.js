@@ -31,6 +31,32 @@ const defaultLogCheck = (log, { cid, when = 'before', method, logName = 'app', l
   // TODO time
 }
 
+const checkLogContext = (context, {
+  when,
+  source = 'auto',
+  method,
+  context: userContext,
+  cid,
+  seq,
+  meta,
+  stack,
+  payload,
+  err
+}) => {
+  expect(context.when).to.equal(when)
+  expect(context.source).to.equal(source)
+  expect(context.method).to.equal(method)
+  expect(context.context).to.equal(userContext)
+  expect(context.cid).to.equal(cid)
+  expect(context.seq).to.equal(seq)
+  expect(context.meta).to.equal(meta)
+  expect(context.stack).to.eql(stack)
+  expect(context.payload).to.equal(payload)
+  expect(context.err).to.equal(err)
+  // startTime,
+  // err,
+}
+
 describe('plugins/logger', () => {
   beforeEach(function () {
     this.s = new Store()
@@ -180,10 +206,10 @@ describe('plugins/logger', () => {
   })
 
   it('support customData option', async function () {
-    const spy = sinon.fake(({ middlewareContext }) => {
+    const spy = sinon.fake(({ method }) => {
       return {
         someOption: 'abc',
-        methodName: middlewareContext.method
+        methodName: method
       }
     })
     const middleware = sinon.fake((payload, ctx, next) => next(payload))
@@ -191,9 +217,13 @@ describe('plugins/logger', () => {
     this.s.plugin(logger, {
       customData: spy
     })
-    this.s.define('fn1', () => {})
-    await this.s.dispatch('fn1')
+    const meta = {}
+    this.s.define('fn1', () => {}, meta)
+    const payload = {}
+    const context = {}
+    await this.s.dispatch('fn1', payload, context)
     const lines = this.getLog()
+
     expect(lines.length).to.equal(2)
     const cid = lines[0].cid
     const stack = [{
@@ -226,22 +256,34 @@ describe('plugins/logger', () => {
     const logCtx1 = spy.firstCall.args[0]
     const logCtx2 = spy.secondCall.args[0]
 
-    expect(logCtx1.when).to.equal('before')
-    expect(logCtx1.err).to.equal(undefined)
-    expect(logCtx1.middlewareContext).to.equal(middlewareCtx)
-    // TODO startTime
+    checkLogContext(logCtx1, {
+      when: 'before',
+      method: 'fn1',
+      context,
+      payload,
+      seq: 0,
+      meta,
+      cid,
+      stack
+    })
 
-    expect(logCtx2.when).to.equal('after')
-    expect(logCtx2.err).to.equal(undefined)
-    expect(logCtx2.middlewareContext).to.equal(middlewareCtx)
-    // TODO startTime
+    checkLogContext(logCtx2, {
+      when: 'after',
+      method: 'fn1',
+      context,
+      payload,
+      seq: 0,
+      meta,
+      cid,
+      stack
+    })
   })
 
   it('support customData option with err', async function () {
-    const spy = sinon.fake(({ middlewareContext }) => {
+    const spy = sinon.fake(({ method }) => {
       return {
         someOption: 'abc',
-        methodName: middlewareContext.method
+        methodName: method
       }
     })
     const middleware = sinon.fake((payload, ctx, next) => next(payload))
@@ -250,11 +292,14 @@ describe('plugins/logger', () => {
       customData: spy
     })
     const error = new Error('abc')
+    const meta = {}
     this.s.define('fn1', () => {
       throw error
-    })
+    }, meta)
+    const payload = {}
+    const context = {}
     try {
-      await this.s.dispatch('fn1')
+      await this.s.dispatch('fn1', payload, context)
     } catch (err) {
     }
     const lines = this.getLog()
@@ -291,15 +336,28 @@ describe('plugins/logger', () => {
     const logCtx1 = spy.firstCall.args[0]
     const logCtx2 = spy.secondCall.args[0]
 
-    expect(logCtx1.when).to.equal('before')
-    expect(logCtx1.err).to.equal(undefined)
-    expect(logCtx1.middlewareContext).to.equal(middlewareCtx)
-    // TODO startTime
+    checkLogContext(logCtx1, {
+      when: 'before',
+      method: 'fn1',
+      context,
+      payload,
+      seq: 0,
+      meta,
+      cid,
+      stack
+    })
 
-    expect(logCtx2.when).to.equal('after')
-    expect(logCtx2.err).to.equal(error)
-    expect(logCtx2.middlewareContext).to.equal(middlewareCtx)
-    // TODO startTime
+    checkLogContext(logCtx2, {
+      when: 'after',
+      method: 'fn1',
+      context,
+      payload,
+      seq: 0,
+      meta,
+      cid,
+      stack,
+      err: error
+    })
   })
 
   it('support customLogLevel option', async function () {
@@ -311,8 +369,11 @@ describe('plugins/logger', () => {
     this.s.plugin(logger, {
       customLogLevel: spy
     })
-    this.s.define('fn1', () => {})
-    await this.s.dispatch('fn1')
+    const meta = {}
+    const payload = {}
+    const context = {}
+    this.s.define('fn1', () => {}, meta)
+    await this.s.dispatch('fn1', payload, context)
     const lines = this.getLog()
     expect(lines.length).to.equal(2)
     const cid = lines[0].cid
@@ -344,15 +405,27 @@ describe('plugins/logger', () => {
     const logCtx1 = spy.firstCall.args[0]
     const logCtx2 = spy.secondCall.args[0]
 
-    expect(logCtx1.when).to.equal('before')
-    expect(logCtx1.err).to.equal(undefined)
-    expect(logCtx1.middlewareContext).to.equal(middlewareCtx)
-    // TODO startTime
+    checkLogContext(logCtx1, {
+      when: 'before',
+      method: 'fn1',
+      context,
+      payload,
+      seq: 0,
+      meta,
+      cid,
+      stack
+    })
 
-    expect(logCtx2.when).to.equal('after')
-    expect(logCtx2.err).to.equal(undefined)
-    expect(logCtx2.middlewareContext).to.equal(middlewareCtx)
-    // TODO startTime
+    checkLogContext(logCtx2, {
+      when: 'after',
+      method: 'fn1',
+      context,
+      payload,
+      seq: 0,
+      meta,
+      cid,
+      stack
+    })
   })
 
   it('log in method and middleware', async function () {

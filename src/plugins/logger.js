@@ -2,6 +2,8 @@
 const bunyan = require('bunyan')
 const errors = require('./../errors')
 
+const logLevels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal']
+
 function logger (store, options = {}) {
   const log = bunyan.createLogger({
     serializers: {
@@ -28,15 +30,23 @@ async function logMiddleware ({ log, customData, customLogLevel }, payload, ctx,
     stack
   })
 
-  const userLog = methodLog.child({
-    source: 'user',
+  const startTime = new Date()
+
+  ctx.log = createUserLog(methodLog, {
+    customDataFn: customData,
+    ctx,
+    payload,
+    startTime,
+    when: 'middleware'
+  })
+  ctx.methodContext.log = createUserLog(methodLog, {
+    customDataFn: customData,
+    ctx,
+    payload,
+    startTime,
     when: 'inside'
   })
 
-  ctx.log = userLog.child({ when: 'middleware' })
-  ctx.methodContext.log = userLog
-
-  const startTime = new Date()
   try {
     logMethod(methodLog, {
       customDataFn: customData,
@@ -69,13 +79,55 @@ async function logMiddleware ({ log, customData, customLogLevel }, payload, ctx,
   }
 }
 
-function logMethod (log, { customDataFn, customLogLevel, when, ctx, payload, startTime, err }) {
+function createUserLog (log, { customDataFn, ctx, payload, startTime, when }) {
+  const userLog = {}
+  logLevels.forEach(level => {
+    userLog[level] = (data = {}, message) => {
+      if (typeof data === 'string') {
+        message = data
+        data = {}
+      }
+      logMethod(log, {
+        customDataFn (logContext) {
+          return {
+            ...data,
+            ...customDataFn(logContext)
+          }
+        },
+        customLogLevel () {
+          return level
+        },
+        when,
+        source: 'user',
+        ctx,
+        payload,
+        startTime,
+        err: data.err
+      })
+    }
+  })
+  return userLog
+}
+
+function logMethod (log, { customDataFn, customLogLevel, when, source = 'auto', ctx, payload, startTime, err }) {
   const elapsedMs = startTime ? new Date().getTime() - startTime.getTime() : undefined
-  const logContext = { when, startTime, err, middlewareContext: ctx, payload }
+  const logContext = {
+    when,
+    startTime,
+    err,
+    source,
+    method: ctx.method,
+    context: ctx.context,
+    cid: ctx.cid,
+    seq: ctx.seq,
+    meta: ctx.meta,
+    stack: ctx.stack,
+    payload
+  }
   const customData = customDataFn ? customDataFn(logContext) : null
   const logData = {
     ...customData,
-    source: 'auto',
+    source,
     when,
     err,
     ms: elapsedMs
