@@ -53,8 +53,7 @@ const checkLogContext = (context, {
   expect(context.stack).to.eql(stack)
   expect(context.payload).to.equal(payload)
   expect(context.err).to.equal(err)
-  // startTime,
-  // err,
+  // TODO startTime,
 }
 
 describe('plugins/logger', () => {
@@ -65,7 +64,11 @@ describe('plugins/logger', () => {
     this.getLog = () => {
       this.capture.stopCapture()
       const captured = this.capture.getCapturedText()
-      return captured.map(line => JSON.parse(line))
+      try {
+        return captured.map(line => JSON.parse(line))
+      } catch (err) {
+        console.error(captured.join('\n'))
+      }
     }
   })
 
@@ -361,7 +364,7 @@ describe('plugins/logger', () => {
   })
 
   it('support customLogLevel option', async function () {
-    const spy = sinon.fake(({ middlewareContext }) => {
+    const spy = sinon.fake(() => {
       return 'warn'
     })
     const middleware = sinon.fake((payload, ctx, next) => next(payload))
@@ -431,7 +434,7 @@ describe('plugins/logger', () => {
   it('log in method and middleware', async function () {
     this.s.plugin(logger)
     const middleware = sinon.fake((payload, ctx, next) => {
-      ctx.log.warn('Msg from middleware')
+      ctx.log.warn({ a: 'b' }, 'Msg from middleware')
       next(payload)
     })
     this.s.use(middleware)
@@ -465,6 +468,8 @@ describe('plugins/logger', () => {
       level: 40,
       source: 'user'
     })
+    expect(lines[1].a).to.equal('b')
+    expect(lines[1].msg).to.equal('Msg from middleware')
 
     defaultLogCheck(lines[2], {
       when: 'inside',

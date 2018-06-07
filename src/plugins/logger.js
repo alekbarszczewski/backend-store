@@ -89,9 +89,10 @@ function createUserLog (log, { customDataFn, ctx, payload, startTime, when }) {
       }
       logMethod(log, {
         customDataFn (logContext) {
+          const customData = customDataFn ? customDataFn(logContext) : {}
           return {
             ...data,
-            ...customDataFn(logContext)
+            ...customData
           }
         },
         customLogLevel () {
@@ -102,14 +103,15 @@ function createUserLog (log, { customDataFn, ctx, payload, startTime, when }) {
         ctx,
         payload,
         startTime,
-        err: data.err
+        err: data.err,
+        message
       })
     }
   })
   return userLog
 }
 
-function logMethod (log, { customDataFn, customLogLevel, when, source = 'auto', ctx, payload, startTime, err }) {
+function logMethod (log, { customDataFn, customLogLevel, when, source = 'auto', ctx, payload, startTime, err, message }) {
   const elapsedMs = startTime ? new Date().getTime() - startTime.getTime() : undefined
   const logContext = {
     when,
@@ -148,7 +150,7 @@ function logMethod (log, { customDataFn, customLogLevel, when, source = 'auto', 
       }
     }
   }
-  const message = `${when}_${ctx.method}` + (elapsedMs != null ? ` (${elapsedMs}ms)` : '')
+  message = message || `${when}_${ctx.method}` + (elapsedMs != null ? ` (${elapsedMs}ms)` : '')
   log[logLevel](logData, message)
 }
 
