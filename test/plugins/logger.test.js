@@ -253,7 +253,6 @@ describe('plugins/logger', () => {
     expect(lines[1].someOption).to.equal('abc')
     expect(lines[1].methodName).to.equal('fn1')
 
-    const middlewareCtx = middleware.firstCall.args[1]
     expect(spy.calledTwice).to.equal(true)
 
     const logCtx1 = spy.firstCall.args[0]
@@ -333,7 +332,6 @@ describe('plugins/logger', () => {
     expect(lines[1].someOption).to.equal('abc')
     expect(lines[1].methodName).to.equal('fn1')
 
-    const middlewareCtx = middleware.firstCall.args[1]
     expect(spy.calledTwice).to.equal(true)
 
     const logCtx1 = spy.firstCall.args[0]
@@ -402,7 +400,6 @@ describe('plugins/logger', () => {
       level: 40
     })
 
-    const middlewareCtx = middleware.firstCall.args[1]
     expect(spy.calledTwice).to.equal(true)
 
     const logCtx1 = spy.firstCall.args[0]
