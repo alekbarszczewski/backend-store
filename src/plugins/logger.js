@@ -55,7 +55,7 @@ async function logMiddleware ({ log, customData, customLogLevel }, payload, ctx,
       ctx,
       payload
     })
-    const result = await next()
+    const result = await next(payload)
     logMethod(methodLog, {
       customDataFn: customData,
       customLogLevel,

@@ -488,4 +488,15 @@ describe('plugins/logger', () => {
       stack
     })
   })
+
+  it('pass payload to next()', async function () {
+    this.s.plugin(logger)
+    const spy = sinon.spy()
+    this.s.define('fn1', spy)
+    const payload = {}
+    await this.s.dispatch('fn1', payload)
+    const lines = this.getLog()
+    expect(spy.calledOnce).to.equal(true)
+    expect(spy.firstCall.args[0]).to.equal(payload)
+  })
 })
