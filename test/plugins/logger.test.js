@@ -495,7 +495,7 @@ describe('plugins/logger', () => {
     this.s.define('fn1', spy)
     const payload = {}
     await this.s.dispatch('fn1', payload)
-    const lines = this.getLog()
+    this.getLog()
     expect(spy.calledOnce).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal(payload)
   })
