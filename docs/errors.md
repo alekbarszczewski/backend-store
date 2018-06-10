@@ -53,6 +53,7 @@ throw new errors.ValidationError({
 })
 .addReason({ path: 'username', message: 'Minimum 3 characters' })
 .addReason({ path: 'phone', message: 'Invalid phone number' })
+.addReason({ path: 'email', message: 'Already taken', reason: 'duplicate' }) // reason is a custom field
 ```
 
 ## AppError
@@ -93,7 +94,9 @@ AppError is a base class of all errors.
 
 **reason:**
 
-Reason must be an object of type `{ path: '<error_path>', message: '<error_message>' }` or an array of such objects (in such case multiple reasons are added at once).
+Reason must be an object of type `{ path: '<error_path>', message: '<error_message>', [key]: <value> }` or an array of such objects (in such case multiple reasons are added at once). You can also add any custom fields to reason such as for example `{ path: 'eamil', message: 'Already taken', reason: 'unique_violation' }` (note that reason field is a custom one).
+
+!> Note only path and message are required fields for a reason.
 
 **Example:**
 
@@ -101,7 +104,7 @@ Reason must be an object of type `{ path: '<error_path>', message: '<error_messa
 throw new errors.ValidationError()
 .addReason({ path: 'username', message: 'invalid' })
 .addReason({ path: 'phone', message: 'invalid'})
-.addReason([{ path: 'a', message: 'invalid' }, { path: 'b', message: 'invalid' }])
+.addReason([{ path: 'a', message: 'invalid' }, { path: 'b', message: 'invalid', customField: 123 }])
 
 // ... catch
 
@@ -113,7 +116,7 @@ err.getReasons()
     { path: 'username', message: 'invalid' },
     { path: 'phone', message: 'invalid'},
     { path: 'a', message: 'invalid' },
-    { path: 'b', message: 'invalid' }
+    { path: 'b', message: 'invalid', customField: 123 }
   ]
 */
 ```

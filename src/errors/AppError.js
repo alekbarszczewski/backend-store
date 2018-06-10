@@ -3,6 +3,7 @@ const ow = require('ow')
 
 class AppError extends ExtendableError {
   constructor (options = {}) {
+    // TODO add ow labels
     ow(options.message, ow.any(ow.string, ow.null, ow.undefined))
     ow(options.err, ow.any(ow.error, ow.null, ow.undefined))
     ow(options.type, ow.any(ow.string, ow.null, ow.undefined))
@@ -42,13 +43,15 @@ class AppError extends ExtendableError {
   }
 
   addReason (reasons) {
-    ow(reasons, ow.any(
-      ow.object.hasKeys('path', 'message').valuesOfType(ow.string),
-      ow.array.ofType(ow.object.hasKeys('path', 'message').valuesOfType(ow.string))
-    ))
+    ow(reasons, ow.any(ow.array.label('reasons'), ow.object.label('reason')))
     if (!Array.isArray(reasons)) {
       reasons = [reasons]
     }
+    reasons.forEach(reason => {
+      ow(reason, ow.object.label('reason').hasKeys('path', 'message'))
+      ow(reason.path, ow.string.label('reason.path'))
+      ow(reason.message, ow.string.label('reason.message'))
+    })
     this.reasons || (this.reasons = [])
     reasons.forEach(reason => {
       this.reasons.push(reason)

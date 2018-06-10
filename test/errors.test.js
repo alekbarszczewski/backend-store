@@ -254,6 +254,19 @@ describe('errors', () => {
         ])
       })
 
+      it('add custom fields to reason', () => {
+        const err1 = new AppError()
+        const err2 = new AppError()
+          .addReason({ path: 'path1', message: 'message1', custom1: 123, custom2: 'test' })
+          .addReason([{ path: 'path2', message: 'message2', custom1: 123, custom2: 'test' }, { path: 'path3', message: 'message3', custom1: 123, custom2: 'test' }])
+        expect(err1.reasons).to.equal(null)
+        expect(err2.reasons).to.eql([
+          { path: 'path1', message: 'message1', custom1: 123, custom2: 'test' },
+          { path: 'path2', message: 'message2', custom1: 123, custom2: 'test' },
+          { path: 'path3', message: 'message3', custom1: 123, custom2: 'test' }
+        ])
+      })
+
       it('throw error on invalid arg(s)', () => {
         const err = new AppError()
 
@@ -277,7 +290,7 @@ describe('errors', () => {
         invalidArgs.forEach(arg => {
           expect(() => {
             err.addReason(invalidArgs)
-          }).to.throw(/Any predicate failed with the following errors/)
+          }).to.throw(/^Expected `reason.message` to be of type `string` but received type/)
         })
       })
     })

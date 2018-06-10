@@ -105,7 +105,7 @@ describe('Store', () => {
         const s = new Store()
         expect(() => {
           s.define(invalidName, function () {})
-        }).to.throw(/^Expected argument to be of type `string` but received type/)
+        }).to.throw(/^Expected `name` to be of type `string` but received type/)
       })
     })
 
@@ -122,7 +122,7 @@ describe('Store', () => {
         const s = new Store()
         expect(() => {
           s.define('test', invalidFn)
-        }).to.throw(/^Expected argument to be of type `function` but received type/)
+        }).to.throw(/^Expected `fn` to be of type `Function` but received type/)
       })
     })
 
@@ -158,7 +158,7 @@ describe('Store', () => {
         const s = new Store()
         expect(() => {
           s.use(fn)
-        }).to.throw(/Expected argument to be of type `function` but received type/)
+        }).to.throw(/Expected `fn` to be of type `Function` but received type/)
       })
     })
   })
@@ -201,7 +201,7 @@ describe('Store', () => {
       invalidPluginFns.forEach(pluginFn => {
         expect(() => {
           s.plugin(pluginFn)
-        }).to.throw(/Expected argument to be of type `function`/)
+        }).to.throw(/Expected `pluginFn` to be of type `Function` but received type/)
       })
     })
   })

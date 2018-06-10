@@ -11,21 +11,21 @@ class Store {
   }
 
   define (name, fn, meta) {
-    ow(name, ow.string.is(name => name.match(methodNamePattern) ? true : 'Invalid method name')) // TODO better message
-    ow(fn, ow.function)
-    ow(name, ow.string.is(name => this.methods.has(name) ? `Method '${name}' is already defined` : true))
+    ow(name, ow.string.label('name').is(name => name.match(methodNamePattern) ? true : 'Invalid method name')) // TODO better message
+    ow(fn, ow.function.label('fn'))
+    ow(name, ow.string.label('name').is(name => this.methods.has(name) ? `Method '${name}' is already defined` : true))
     this.methods.set(name, { fn, meta })
     return this
   }
 
   use (fn) {
-    ow(fn, ow.function)
+    ow(fn, ow.function.label('fn'))
     this.middleware.push(fn)
     return this
   }
 
   plugin (pluginFn, options) {
-    ow(pluginFn, ow.function)
+    ow(pluginFn, ow.function.label('pluginFn'))
     return pluginFn(this, options)
   }
 
