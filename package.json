@@ -4,10 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "mocha ./test/*.test.js ./test/**/*.test.js",
+    "test": "mocha ./test/*.test.js ./test/**/*.test.js && yarn lint",
     "lint": "standard",
     "docs": "docsify serve ./docs",
-    "prepublish": "yarn test && yarn lint"
+    "prepublish": "yarn test"
   },
   "repository": {
     "type": "git",

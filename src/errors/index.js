@@ -5,6 +5,7 @@ const InternalError = require('./InternalError')
 const NotFoundError = require('./NotFoundError')
 const NotImplementedError = require('./NotImplementedError')
 const ValidationError = require('./ValidationError')
+const wrapError = require('./wrapError')
 
 module.exports = {
   AppError,
@@ -13,5 +14,6 @@ module.exports = {
   InternalError,
   NotFoundError,
   NotImplementedError,
-  ValidationError
+  ValidationError,
+  wrapError
 }

@@ -168,10 +168,6 @@ Executes method in the store.
 
 `Promise<any>` - result of method function
 
-!> Please note: error thrown from call chain is automatically wrapped with `errors.InternalError`.
-Original error is available with `err.getOriginalError()`.
-Error wrapping is implemented to avoid accidentaly leak callstack or error message to enduser.
-
 **Description**:
 
 It executes given method along with all middleware defined in the store.

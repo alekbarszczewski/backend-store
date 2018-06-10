@@ -485,8 +485,8 @@ describe('Store', () => {
         error = err
       }
       expect(fn1.calledOnce).to.equal(true)
-      expect(error).to.be.instanceOf(errors.InternalError)
-      expect(error.getOriginalError().message).to.equal('next() called more than once')
+      expect(error).to.be.instanceOf(Error)
+      expect(error.message).to.equal('next() called more than once')
     })
 
     it('throw error on duplicate next execution in middleware #2', async () => {
@@ -512,19 +512,20 @@ describe('Store', () => {
 
       expect(fn1.calledOnce).to.equal(true)
       expect(m2.calledOnce).to.equal(true)
-      expect(error).to.be.instanceOf(errors.InternalError)
-      expect(error.getOriginalError().message).to.equal('next() called more than once')
+      expect(error).to.be.instanceOf(Error)
+      expect(error.message).to.equal('next() called more than once')
     })
 
     it('handle error from middleware', async () => {
       const s = new Store()
       const fn1 = sinon.fake.resolves()
       s.define('fn1', fn1)
+      const errorToThrow = new Error('test error')
       const m1 = sinon.fake(async (payload, ctx, next) => {
         await next()
       })
       const m2 = sinon.fake(async (payload, ctx, next) => {
-        throw new Error('test error')
+        throw errorToThrow
       })
       const m3 = sinon.fake(async (payload, ctx, next) => {
         await next()
@@ -540,8 +541,7 @@ describe('Store', () => {
         error = err
       }
 
-      expect(error).to.be.instanceOf(errors.InternalError)
-      expect(error.getOriginalError().message).to.equal('test error')
+      expect(error).to.equal(errorToThrow)
       expect(fn1.called).to.equal(false)
       expect(m1.calledOnce).to.equal(true)
       expect(m2.calledOnce).to.equal(true)

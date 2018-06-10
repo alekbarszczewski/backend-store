@@ -108,6 +108,30 @@ describe('errors', () => {
     })
   })
 
+  describe('wrapError', () => {
+    it('return err if err evaluates to false', () => {
+      const falsyValues = [undefined, null, false, 0]
+      falsyValues.forEach(falsyValue => {
+        expect(errors.wrapError(falsyValue)).to.equal(falsyValue)
+      })
+    })
+
+    it('return err if err instance of AppError', () => {
+      testErrors.forEach(({ ErrorCls }) => {
+        const err = new ErrorCls()
+        expect(errors.wrapError(err)).to.equal(err)
+      })
+    })
+
+    it('return InternalError if err is not instance of AppError', () => {
+      const err = new Error('test error')
+      const wrappedError = errors.wrapError(err)
+      expect(wrappedError).to.be.instanceOf(errors.InternalError)
+      expect(wrappedError.getOriginalError()).to.equal(err)
+      expect(wrappedError.message).to.equal('Internal error')
+    })
+  })
+
   describe('AppError', () => {
     describe('#constructor', () => {
       it('support options', () => {

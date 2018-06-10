@@ -270,3 +270,42 @@ Throw this error on any validation error(s). Extends `AppError`.
 | type        | "validation"
 | severity    | "warning"
 | statusCode  | 400
+
+## wrapError(err)
+
+`([err]) => AppError`
+
+Wraps any error into AppError.
+
+* if err argument evaluates to false then it returns that falsy value
+* if err argument is already instance of AppError it returns that error
+* else it returns `new InternalError({ err })`
+
+It's a helper function to convert any error into AppError.
+After wrapping error you can safely return `err.toJSON()` to the end user and no crucial information (like call-stack) will leak from backend.
+
+```js
+// example 1
+import { errors } from 'backend-store'
+
+app.get('/test', (req, res, next) => {
+  store.dispatch('test')
+  .then(result => {
+    res.json(result)
+  })
+  .catch(err => {
+    next(err)
+  })
+})
+
+app.use((err, req, res, next) => {
+  err = errors.wrapError(err)
+  res.json(err.toJSON())
+})
+
+// example 2
+const error = wrapError(null) // error = null
+const error = wrapError(false) // error = false
+const error = wrapError(new ValidationError()) // error = ValidationError instance
+const error = wrapError(new Error('test')) // error = InternalError instance, err.getOriginalError().message = test
+```

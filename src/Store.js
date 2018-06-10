@@ -30,18 +30,10 @@ class Store {
   }
 
   async dispatch (name, payload, context, options = {}) {
-    try {
-      const result = await this._dispatch(name, payload, context, {
-        cid: options.cid || uuid(),
-        seq: 0
-      }, [])
-      return result
-    } catch (err) {
-      if (!(err instanceof errors.AppError)) {
-        throw new errors.InternalError({ err })
-      }
-      throw err
-    }
+    return this._dispatch(name, payload, context, {
+      cid: options.cid || uuid(),
+      seq: 0
+    }, [])
   }
 
   _dispatch (name, payload, context, options, stack) {
@@ -83,10 +75,6 @@ class Store {
       stack,
       methodContext
     }
-
-    // const middlewares = this.middleware.map(middleware => {
-    //   return middleware.bind(null, middlewareContext)
-    // })
 
     const middlewares = this.middleware.map(middleware => middleware.bind(null))
     const next = getNext(middlewares, fn, { middlewareContext, methodContext })
