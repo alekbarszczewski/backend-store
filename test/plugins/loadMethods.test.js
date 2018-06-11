@@ -63,7 +63,7 @@ describe('plugins/loadMethods', () => {
     invalidPaths.forEach(invalidPath => {
       expect(() => {
         s.plugin(loadMethods, { path: invalidPath })
-      }).to.throw(/Expected argument to be of type `string`/)
+      }).to.throw(/^Expected `options.path` to be of type `string` but received type/)
     })
   })
 
@@ -75,6 +75,22 @@ describe('plugins/loadMethods', () => {
     expect(() => {
       s.plugin(loadMethods, { path: path.join(__dirname, '/fakeStores/store1/test1.js') })
     }).to.throw(/ENOTDIR/)
+  })
+
+  it('throw error on invalid filter option', async () => {
+    const s = new Store()
+    const invalidFilters = [
+      'abc',
+      true,
+      123,
+      {},
+      []
+    ]
+    invalidFilters.forEach(invalidFilter => {
+      expect(() => {
+        s.plugin(loadMethods, { path: path.join(__dirname, 'fakeStores/store1'), filter: invalidFilter })
+      }).to.throw(/^Expected `options.filter` to be of type `Function` but received type/)
+    })
   })
 
   it('throw error on duplicate method', async () => {

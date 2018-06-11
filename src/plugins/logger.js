@@ -1,10 +1,15 @@
-// const ow = require('ow')
+const ow = require('ow')
 const bunyan = require('bunyan')
 const errors = require('./../errors')
 
 const logLevels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal']
 
 function logger (store, options = {}) {
+  ow(options.name, ow.any(ow.string, ow.null, ow.undefined))
+  ow(options.bunyan, ow.any(ow.object, ow.null, ow.undefined))
+  ow(options.customData, ow.any(ow.function, ow.null, ow.undefined))
+  ow(options.customLogLevel, ow.any(ow.function, ow.null, ow.undefined))
+
   const log = bunyan.createLogger({
     serializers: {
       ...bunyan.stdSerializers,

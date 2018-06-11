@@ -3,7 +3,7 @@ const ow = require('ow')
 
 class AppError extends ExtendableError {
   constructor (options = {}) {
-    // TODO add ow labels
+    // TODO add ow labels to ow.any() as soon as ow is updated
     ow(options.message, ow.any(ow.string, ow.null, ow.undefined))
     ow(options.err, ow.any(ow.error, ow.null, ow.undefined))
     ow(options.type, ow.any(ow.string, ow.null, ow.undefined))

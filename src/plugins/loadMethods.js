@@ -3,9 +3,11 @@ const dir = require('node-dir')
 const path = require('path')
 
 function loadMethods (store, options = {}) {
-  ow(options.path, ow.string)
+  ow(options.path, ow.string.label('options.path'))
 
   const fileFilter = options.filter || defaultFilter
+
+  ow(fileFilter, ow.function.label('options.filter'))
 
   const modules = (dir.files(options.path, { sync: true }) || [])
     .map(filePath => {
