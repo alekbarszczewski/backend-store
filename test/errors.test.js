@@ -105,6 +105,22 @@ describe('errors', () => {
         message: 'abc',
         reasons: [{ path: 'path1', message: 'message1' }, { path: 'path2', message: 'message2' }]
       })
+
+      const err3 = new testError.ErrorCls('mainMessage', {
+        message: 'abc',
+        type: 'abc',
+        severity: 'abc',
+        statusCode: 999,
+        err: originalErr,
+        data
+      })
+
+      expect(err3.message).to.equal('mainMessage')
+      expect(err3.type).to.equal(testError.type)
+      expect(err3.severity).to.equal(testError.severity)
+      expect(err3.statusCode).to.equal(testError.statusCode)
+      expect(err3.err).to.equal(originalErr)
+      expect(err3.data).to.equal(data)
     })
   })
 
@@ -163,6 +179,17 @@ describe('errors', () => {
         expect(err2.statusCode).to.equal(999)
         expect(err2.data).to.equal(data)
         expect(err2.reasons).to.equal(null)
+      })
+
+      it('allow to pass message as first arg', () => {
+        const data2 = {}
+        const err1 = new AppError('msg1')
+        const err2 = new AppError('msg2', { data: data2 })
+        const err3 = new AppError('msg3', { message: 'abc' })
+        expect(err1.message).to.equal('msg1')
+        expect(err2.message).to.equal('msg2')
+        expect(err2.data).to.equal(data2)
+        expect(err3.message).to.equal('msg3')
       })
 
       it('throw error on invalid args(s)', () => {

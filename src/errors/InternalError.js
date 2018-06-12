@@ -1,7 +1,8 @@
 const AppError = require('./AppError')
 
 class InternalError extends AppError {
-  constructor (options = {}) {
+  constructor (message, options = {}) {
+    options = AppError.normalizeOptions(message, options)
     super({
       message: options.message || 'Internal error',
       type: 'internal',

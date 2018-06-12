@@ -54,13 +54,19 @@ throw new errors.ValidationError({
 .addReason({ path: 'username', message: 'Minimum 3 characters' })
 .addReason({ path: 'phone', message: 'Invalid phone number' })
 .addReason({ path: 'email', message: 'Already taken', reason: 'duplicate' }) // reason is a custom field
+
+// You can also pass message as a frst argument to each error constructor
+// and then optionally options object
+throw new errors.AuthenticationError('You have to log in first')
+throw new errors.AuthenticationError('You have to log in first', { data: customData })
+throw new errors.AuthenticationError({ message: 'You have to log in first', data: customData })
 ```
 
 ## AppError
 
 AppError is a base class of all errors.
 
-### #constructor(options)
+### #constructor([message], [options])
 
 **Arguments**:
 

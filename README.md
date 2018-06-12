@@ -8,4 +8,4 @@ Docs available here: https://alekbarszczewski.github.io/backend-store.
 
 * code cov
 * ow - label arguments
-* AppError - reason - add reason field?
+* update error docs

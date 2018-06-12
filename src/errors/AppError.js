@@ -2,7 +2,8 @@ const ExtendableError = require('es6-error')
 const ow = require('ow')
 
 class AppError extends ExtendableError {
-  constructor (options = {}) {
+  constructor (message, options = {}) {
+    options = AppError.normalizeOptions(message, options)
     // TODO add ow labels to ow.any() as soon as ow is updated
     ow(options.message, ow.any(ow.string, ow.null, ow.undefined))
     ow(options.err, ow.any(ow.error, ow.null, ow.undefined))
@@ -70,6 +71,13 @@ class AppError extends ExtendableError {
       message: this.message,
       reasons: this.reasons
     }
+  }
+
+  static normalizeOptions (message, options = {}) {
+    options = typeof message !== 'string'
+      ? (message || {})
+      : options = { ...options, message }
+    return options
   }
 }
 

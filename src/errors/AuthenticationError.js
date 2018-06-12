@@ -1,7 +1,8 @@
 const AppError = require('./AppError')
 
 class AuthenticationError extends AppError {
-  constructor (options = {}) {
+  constructor (message, options = {}) {
+    options = AppError.normalizeOptions(message, options)
     super({
       message: options.message || 'Authentication error',
       type: 'authentication',

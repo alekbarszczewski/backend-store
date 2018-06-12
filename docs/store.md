@@ -109,7 +109,7 @@ store.use(myMiddleware)
 
 Middleware function is described in details here: [Middleware function](/store.md?id=middleware-function).
 
-## #plugin(fn, options)
+## #plugin(fn, [options])
 
 Use a plugin on store instance.
 
@@ -150,7 +150,7 @@ store.plugin(myPlugin, { log: true })
 
 Plugin function is described in details here: [Plugin function](/store.md?id=plugin-function).
 
-## #dispatch(method, payload, context, options)
+## #dispatch(method, [payload], [context], [options])
 
 Executes method in the store.
 
