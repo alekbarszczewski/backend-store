@@ -11,6 +11,7 @@ function logger (store, options = {}) {
   ow(options.customLogLevel, ow.any(ow.function, ow.null, ow.undefined))
 
   const log = bunyan.createLogger({
+    level: process.env.STORE_LOG_LEVEL,
     serializers: {
       ...bunyan.stdSerializers,
       originalErr: bunyan.stdSerializers.err

@@ -330,6 +330,10 @@ The console output will be:
 | [customData]     | `function` | Function to log some extra data
 | [customLogLevel] | `function` | Function to customise bunyan log level
 
+!> Additionally logger plugin supports `process.env.STORE_LOG_LEVEL` option which will be passed as `options.bunyan.level`.
+It's a helper to control log level from environment variable.
+If both `process.env.STORE_LOG_LEVEL` and `options.bunyan.level` are set then the latter one takes precedence.
+
 **customData**
 
 Function of type `(LogContext) => object`.

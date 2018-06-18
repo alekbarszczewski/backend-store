@@ -499,4 +499,33 @@ describe('plugins/logger', () => {
     expect(spy.calledOnce).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal(payload)
   })
+
+  it('respect process.env.STORE_LOG_LEVEL', async function () {
+    process.env.STORE_LOG_LEVEL = 'error'
+    this.s.plugin(logger)
+    delete process.env.STORE_LOG_LEVEL
+    this.s.define('fn1', (payload, { log }) => {
+      log.error('test')
+    })
+    const payload = { title: 'abc' }
+    const context = { user: 123 }
+    await this.s.dispatch('fn1', payload, context)
+    const lines = this.getLog()
+    expect(lines.length).to.equal(1)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+    defaultLogCheck(lines[0], {
+      when: 'inside',
+      method: 'fn1',
+      source: 'user',
+      cid,
+      seq: 0,
+      stack,
+      level: 50
+    })
+  })
 })
