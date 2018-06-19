@@ -243,7 +243,7 @@ describe('Store', () => {
       expect(result).to.equal(fnResult)
       const methodContext = fn.firstCall.args[1]
       const methodPayload = fn.firstCall.args[0]
-      expect(methodContext.context).to.equal(undefined)
+      expect(methodContext.context).to.equal(null)
       expect(methodPayload).to.equal(undefined)
     })
 

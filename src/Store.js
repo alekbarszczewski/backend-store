@@ -29,7 +29,7 @@ class Store {
     return pluginFn(this, options)
   }
 
-  async dispatch (name, payload, context, options = {}) {
+  async dispatch (name, payload, context = null, options = {}) {
     return this._dispatch(name, payload, context, {
       cid: options.cid || uuid(),
       seq: 0
