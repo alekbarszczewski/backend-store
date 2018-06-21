@@ -25,12 +25,14 @@ $ yarn add backend-store
 ```js
 import { Store } from 'backend-store'
 import logger from 'backend-store/plugins/logger'
-import { join } from 'path'
 
+// create store
 const store = new Store()
 
+// use logger plugin (see console output what it can do)
 store.plugin(logger)
 
+// define method that calls other method
 store.define('api/users/create', async (payload = {}, { context, errors, dispatch }) {
   if (!context || !context.user || context.user.role !== 'admin') {
     throw new errors.AuthorizationError('Only admin can create posts')
@@ -42,6 +44,7 @@ store.define('api/users/create', async (payload = {}, { context, errors, dispatc
   return post
 })
 
+// define another method
 store.define('database/users/insert', async ({ title, userId }) {
   return {
     id: 1,
@@ -50,6 +53,7 @@ store.define('database/users/insert', async ({ title, userId }) {
   }
 })
 
+// call (dispatch) method in store; pass payload and context
 store.dispatch('api/users/create', { title: 'hello!' }, {
   user: { role: 'admin' }
 }).then(post => {
