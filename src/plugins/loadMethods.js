@@ -9,7 +9,7 @@ function loadMethods (store, options = {}) {
 
   ow(fileFilter, ow.function.label('options.filter'))
 
-  const modules = (dir.files(options.path, { sync: true }) || [])
+  const modules = dir.files(options.path, { sync: true })
     .map(filePath => {
       const relativePath = path.relative(options.path, filePath)
       const moduleName = path.basename(relativePath, path.extname(relativePath))

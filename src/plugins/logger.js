@@ -88,7 +88,7 @@ async function logMiddleware ({ log, customData, customLogLevel }, payload, ctx,
 function createUserLog (log, { customDataFn, ctx, payload, startTime, when }) {
   const userLog = {}
   logLevels.forEach(level => {
-    userLog[level] = (data = {}, message) => {
+    userLog[level] = (data, message) => {
       if (typeof data === 'string') {
         message = data
         data = {}

@@ -502,6 +502,11 @@ describe('Store', () => {
       })
       s.use(m2)
 
+      const m3 = sinon.fake(async (payload, ctx, next) => {
+        await next()
+      })
+      s.use(m3)
+
       let error
 
       try {

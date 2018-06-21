@@ -149,6 +149,18 @@ describe('errors', () => {
   })
 
   describe('AppError', () => {
+    describe('::normalizeOptions', () => {
+      it('normalizeOptions', () => {
+        const normalizeOptions = errors.AppError.normalizeOptions
+        expect(normalizeOptions()).to.eql({})
+        expect(normalizeOptions({})).to.eql({})
+        expect(normalizeOptions('msg')).to.eql({ message: 'msg' })
+        expect(normalizeOptions('msg', { a: 'b' })).to.eql({ message: 'msg', a: 'b' })
+        expect(normalizeOptions('msg', { message: 'abc', a: 'b' })).to.eql({ message: 'msg', a: 'b' })
+        expect(normalizeOptions({ message: 'abc', a: 'b' })).to.eql({ message: 'abc', a: 'b' })
+      })
+    })
+
     describe('#constructor', () => {
       it('support options', () => {
         const err1 = new AppError()

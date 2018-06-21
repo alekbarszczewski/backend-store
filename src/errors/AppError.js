@@ -76,7 +76,7 @@ class AppError extends ExtendableError {
   static normalizeOptions (message, options = {}) {
     options = typeof message !== 'string'
       ? (message || {})
-      : options = { ...options, message }
+      : { ...options, message }
     return options
   }
 }

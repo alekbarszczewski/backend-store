@@ -489,6 +489,77 @@ describe('plugins/logger', () => {
     })
   })
 
+  it('log in method and middleware with customData', async function () {
+    this.s.plugin(logger, {
+      customData () {
+        return {
+          customField: 123
+        }
+      }
+    })
+    const middleware = sinon.fake((payload, ctx, next) => {
+      ctx.log.warn({ a: 'b' }, 'Msg from middleware')
+      next(payload)
+    })
+    this.s.use(middleware)
+    this.s.define('fn1', (payload, { log }) => {
+      log.warn({ some: 'data' }, 'Some message')
+    })
+    await this.s.dispatch('fn1')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(4)
+    const cid = lines[0].cid
+    const stack = [{
+      cid,
+      seq: 0,
+      method: 'fn1'
+    }]
+
+    defaultLogCheck(lines[0], {
+      when: 'before',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+
+    defaultLogCheck(lines[1], {
+      when: 'middleware',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 40,
+      source: 'user'
+    })
+    expect(lines[1].a).to.equal('b')
+    expect(lines[1].msg).to.equal('Msg from middleware')
+
+    defaultLogCheck(lines[2], {
+      when: 'inside',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack,
+      level: 40,
+      source: 'user'
+    })
+    expect(lines[2].some).to.equal('data')
+    expect(lines[2].msg).to.equal('Some message')
+
+    defaultLogCheck(lines[3], {
+      when: 'after',
+      method: 'fn1',
+      cid,
+      seq: 0,
+      stack
+    })
+
+    lines.forEach(line => {
+      expect(line.customField).to.equal(123)
+    })
+  })
+
   it('pass payload to next()', async function () {
     this.s.plugin(logger)
     const spy = sinon.spy()
@@ -498,6 +569,58 @@ describe('plugins/logger', () => {
     this.getLog()
     expect(spy.calledOnce).to.equal(true)
     expect(spy.firstCall.args[0]).to.equal(payload)
+  })
+
+  it('log instance of AppError', async function () {
+    this.s.plugin(logger)
+    const originalErr = new Error('abc')
+    this.s.define('fn1', (payload, { errors }) => {
+      throw new errors.AuthorizationError('test', { data: { a: 'b' }, err: originalErr })
+        .addReason({ path: 'a', message: 'b' })
+    })
+    try {
+      await this.s.dispatch('fn1')
+    } catch (err) {
+      // do nothing
+    }
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    expect(lines[1].level).to.equal(40)
+    expect(lines[1].errInfo).to.eql({
+      type: 'authorization',
+      severity: 'warning',
+      message: 'test',
+      data: { a: 'b' },
+      reasons: [{
+        path: 'a',
+        message: 'b'
+      }]
+    })
+    expect(lines[1].originalErr.message).to.eql('abc')
+    expect(lines[1].originalErr.name).to.eql('Error')
+    expect(lines[1].originalErr.stack).to.be.a('string')
+  })
+
+  it('log instance of AppError with severity = "error"', async function () {
+    this.s.plugin(logger)
+    this.s.define('fn1', (payload, { errors }) => {
+      throw new errors.InternalError('test')
+    })
+    try {
+      await this.s.dispatch('fn1')
+    } catch (err) {
+      // do nothing
+    }
+    const lines = this.getLog()
+    expect(lines.length).to.equal(2)
+    expect(lines[1].level).to.equal(50)
+    expect(lines[1].errInfo).to.eql({
+      type: 'internal',
+      severity: 'error',
+      message: 'test',
+      data: null,
+      reasons: null
+    })
   })
 
   it('respect process.env.STORE_LOG_LEVEL', async function () {

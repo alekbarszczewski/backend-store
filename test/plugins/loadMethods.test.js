@@ -65,6 +65,9 @@ describe('plugins/loadMethods', () => {
         s.plugin(loadMethods, { path: invalidPath })
       }).to.throw(/^Expected `options.path` to be of type `string` but received type/)
     })
+    expect(() => {
+      s.plugin(loadMethods)
+    }).to.throw(/^Expected `options.path` to be of type `string` but received type/)
   })
 
   it('throw error if path is invalid or points to non-directory', async () => {
