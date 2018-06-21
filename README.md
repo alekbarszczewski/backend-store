@@ -1,5 +1,11 @@
 # backend-store
 
+[![Build Status](https://travis-ci.org/alekbarszczewski/backend-store.svg?branch=master)](https://travis-ci.org/alekbarszczewski/backend-store)
+[![Coverage Status](https://coveralls.io/repos/github/alekbarszczewski/backend-store/badge.svg)](https://coveralls.io/github/alekbarszczewski/backend-store)
+[![Dependencies](https://david-dm.org/alekbarszczewski/backend-store.svg)](https://david-dm.org/alekbarszczewski/backend-store)
+[![Dependencies](https://david-dm.org/alekbarszczewski/backend-store/dev-status.svg)](https://david-dm.org/alekbarszczewski/backend-store?type=dev)
+
+
 Backend store manages business logic functions in Node.js backend application.
 
 * It allows to define functions and to call them each other through the store
