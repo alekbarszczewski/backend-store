@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.6
+
+* dependencies update
+
 ## 0.2.0
 
 * [feature] - set context to null by default
