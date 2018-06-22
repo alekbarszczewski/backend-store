@@ -11,7 +11,7 @@
 Backend store manages business logic functions in Node.js backend application.
 
 * It allows to define functions and to call them each other through the store
-* It allows to use custom middleware executed before each function call
+* It allows to use custom middleware executed before/after each function call
 * It has built-in set of business logic error classes
 * It has built-in few simple yet powerful plugins
 
