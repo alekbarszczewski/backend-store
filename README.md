@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/alekbarszczewski/backend-store.svg?branch=master)](https://travis-ci.org/alekbarszczewski/backend-store)
 [![Coverage Status](https://coveralls.io/repos/github/alekbarszczewski/backend-store/badge.svg)](https://coveralls.io/github/alekbarszczewski/backend-store)
-[![Dependencies](https://david-dm.org/alekbarszczewski/backend-store.svg)](https://david-dm.org/alekbarszczewski/backend-store)
+[![Dependencies](https://david-dm.org/alekbarszczewski/backend-store/status.svg)](https://david-dm.org/alekbarszczewski/backend-store)
 [![Dependencies](https://david-dm.org/alekbarszczewski/backend-store/dev-status.svg)](https://david-dm.org/alekbarszczewski/backend-store?type=dev)
 [![NPM Version](https://img.shields.io/npm/v/backend-store.svg)]()
 [![Node.js Version](https://img.shields.io/node/v/backend-store.svg)]()
