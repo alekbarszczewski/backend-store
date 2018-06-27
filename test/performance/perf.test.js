@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+
 const chai = require('chai')
 const { test: pureTest } = require('./pureTest')
 const { test: storeTest } = require('./storeTest')
@@ -16,7 +18,6 @@ const test = async (title, fn) => {
   const average = total / iterations
   // console.log(title, `total = ${total}ms, average = ${average}ms`)
   return { total, average }
-
 }
 
 describe('performance', () => {

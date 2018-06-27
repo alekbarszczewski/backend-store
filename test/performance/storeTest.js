@@ -10,22 +10,22 @@ store.plugin(logger, {
 })
 
 store.define('fn1', async (payload, { dispatch }) => {
-  return await dispatch('fn2', payload)
+  return dispatch('fn2', payload)
 })
 
 store.define('fn2', async (payload, { dispatch }) => {
-  return await Promise.all([
+  return Promise.all([
     dispatch('fn3', payload),
     dispatch('fn4', payload)
   ])
 })
 
 store.define('fn3', async (payload, { dispatch }) => {
-  return await dispatch('fn5', payload)
+  return dispatch('fn5', payload)
 })
 
 store.define('fn4', async (payload, { dispatch }) => {
-  return await dispatch('fn5', payload)
+  return dispatch('fn5', payload)
 })
 
 store.define('fn5', async (payload, { dispatch }) => {
