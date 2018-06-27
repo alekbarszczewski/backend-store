@@ -19,7 +19,7 @@ const test = async (title, fn) => {
 
 }
 
-describe.only('performance', () => {
+describe('performance', () => {
   it('add average overhead less than 1ms', async function () {
     this.timeout(30000)
     const { average: avgPure } = await test('pure', pureTest)
