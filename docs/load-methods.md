@@ -79,7 +79,7 @@ Filter function is called with single argument which is an object with following
 |--------------|----------------------------------------------|-------------------------------------
 | filePath     | /my-project/src/my-store/api/users/create.js | absolute file path
 | fileName     | create.js                                    | file name with extension
-| relativePath | /api/users/create.js                         | file path relative to store directory
+| relativePath | api/users/create.js                          | file path relative to store directory
 | moduleName   | create                                       | name of the file without extension
 | namespace    | /api/users                                   | relativePath without file name
 

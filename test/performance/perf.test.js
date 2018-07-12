@@ -22,7 +22,7 @@ const test = async (title, fn) => {
 
 describe('performance', () => {
   it('add average overhead less than 1ms', async function () {
-    this.timeout(30000)
+    this.timeout(60000)
     const { average: avgPure } = await test('pure', pureTest)
     const { average: avgStore } = await test('store', storeTest)
     expect(avgStore - avgPure).to.be.below(1)
