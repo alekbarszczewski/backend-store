@@ -78,5 +78,3 @@ https://alekbarszczewski.github.io/backend-store.
 ## TODO
 
 * ow - label arguments (waiting for ow package to be updated)
-* default context to {}?
-* fix issue with empty folder in store
