@@ -1,6 +1,7 @@
 const ow = require('ow')
-const dir = require('node-dir')
+const readdir = require('fs-readdir-recursive')
 const path = require('path')
+const fs = require('fs')
 
 function loadMethods (store, options = {}) {
   ow(options.path, ow.string.label('options.path'))
@@ -9,8 +10,14 @@ function loadMethods (store, options = {}) {
 
   ow(fileFilter, ow.function.label('options.filter'))
 
-  const modules = dir.files(options.path, { sync: true })
+  const stat = fs.statSync(options.path)
+  if (!stat.isDirectory()) {
+    throw new Error(`Directory ${options.path} does not exist`)
+  }
+
+  const modules = readdir(options.path)
     .map(filePath => {
+      filePath = path.join(options.path, filePath)
       const relativePath = path.relative(options.path, filePath)
       const moduleName = path.basename(relativePath, path.extname(relativePath))
       const fileName = path.basename(relativePath)
@@ -36,7 +43,9 @@ function loadMethods (store, options = {}) {
     const moduleFile = require(filePath)
     const moduleFn = moduleFile.default || moduleFile
 
-    moduleFn({ define })
+    if (moduleFn && typeof moduleFn === 'function') {
+      moduleFn({ define })
+    }
   })
 }
 

@@ -22,6 +22,30 @@ describe('plugins/loadMethods', () => {
     await expect(s.dispatch('nested1/nested2/test3')).eventually.eql(['nested1/nested2/test3'])
   })
 
+  it('load empty store', async () => {
+    const s = new Store()
+    expect(() => {
+      s.plugin(loadMethods, { path: path.join(__dirname, 'fakeStores/store4') })
+    }).to.not.throw()
+    expect(s.methods.size).to.equal(0)
+  })
+
+  it('load empty store with empty folders', async () => {
+    const s = new Store()
+    expect(() => {
+      s.plugin(loadMethods, { path: path.join(__dirname, 'fakeStores/store5') })
+    }).to.not.throw()
+    expect(s.methods.size).to.equal(0)
+  })
+
+  it('ignore files that dont export function', async () => {
+    const s = new Store()
+    expect(() => {
+      s.plugin(loadMethods, { path: path.join(__dirname, 'fakeStores/store6') })
+    }).to.not.throw()
+    expect(s.methods.size).to.equal(0)
+  })
+
   it('respect filter option', async () => {
     const s = new Store()
     const filter = sinon.fake(({ relativePath }) => {
@@ -77,7 +101,7 @@ describe('plugins/loadMethods', () => {
     }).to.throw(/ENOENT/)
     expect(() => {
       s.plugin(loadMethods, { path: path.join(__dirname, '/fakeStores/store1/test1.js') })
-    }).to.throw(/ENOTDIR/)
+    }).to.throw(/^Directory .+ does not exist$/)
   })
 
   it('throw error on invalid filter option', async () => {

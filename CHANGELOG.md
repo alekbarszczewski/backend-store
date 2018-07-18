@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.7
+
+* [fix] - support empty directories
+* [fix] - ignore files that don't export a function
+
 ## 0.2.6
 
 * dependencies update

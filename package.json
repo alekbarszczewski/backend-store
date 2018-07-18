@@ -19,7 +19,7 @@
   "dependencies": {
     "bunyan": "^1.8.12",
     "es6-error": "^4.1.1",
-    "node-dir": "^0.1.17",
+    "fs-readdir-recursive": "^1.1.0",
     "ow": "^0.6.0",
     "uuid": "^3.2.1"
   },
