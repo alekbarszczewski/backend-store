@@ -77,5 +77,4 @@ https://alekbarszczewski.github.io/backend-store.
 
 ## TODO
 
-* logger - expose general purpose logger
 * ow - label arguments (waiting for ow package to be updated)
