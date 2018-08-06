@@ -24,6 +24,8 @@ function logger (store, options = {}) {
     customData: options.customData,
     customLogLevel: options.customLogLevel
   }))
+
+  store.log = log.child({ general: true })
 }
 
 async function logMiddleware ({ log, customData, customLogLevel }, payload, ctx, next) {

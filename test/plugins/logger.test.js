@@ -651,4 +651,18 @@ describe('plugins/logger', () => {
       level: 50
     })
   })
+
+  it('expose general purpose logger on store', async function () {
+    this.s.plugin(logger)
+    this.s.log.info({ a: 'b' }, 'hello')
+    const lines = this.getLog()
+    expect(lines.length).to.equal(1)
+    expect(lines[0]).to.include({
+      name: 'app',
+      level: 30,
+      a: 'b',
+      msg: 'hello',
+      v: 0
+    })
+  })
 })
