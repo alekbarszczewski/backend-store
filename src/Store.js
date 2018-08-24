@@ -5,9 +5,13 @@ const errors = require('./errors')
 const methodNamePattern = /^[a-zA-Z_][a-zA-Z_0-9]*(\/[a-zA-Z_][a-zA-Z_0-9]*)*$/i
 
 class Store {
-  constructor () {
+  constructor (options = {}) {
     this.methods = new Map()
     this.middleware = []
+    if (options.getDefaultContext !== undefined) {
+      ow(options.getDefaultContext, ow.function.label('options.getDefaultContext'))
+    }
+    this.getDefaultContext = options.getDefaultContext || (() => null)
   }
 
   define (name, fn, meta) {
@@ -29,7 +33,10 @@ class Store {
     return pluginFn(this, options)
   }
 
-  async dispatch (name, payload, context = null, options = {}) {
+  async dispatch (name, payload, context, options = {}) {
+    if (context === undefined) {
+      context = this.getDefaultContext()
+    }
     return this._dispatch(name, payload, context, {
       cid: options.cid || uuid(),
       seq: 0

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+* [feature] - new Store({ getDefaultContext }) option
+
 ## 0.2.7
 
 * [fix] - support empty directories

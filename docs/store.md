@@ -7,8 +7,41 @@ import { Store } from 'backend-store'
 
 ## #constructor
 ```js
-const store = new Store() // takes no args
+const store = new Store(options)
 ```
+
+Create new store
+
+**Arguments**:
+
+| Argument                  | Type       | Description
+|---------------------------|------------|------------
+| options.getDefaultContext | `function` | Function that returns default context (if not passed explicitly to Store#dispatch)
+
+**options.getDefaultContext**
+
+Default value of "getDefaultContext" option is `() => null`.
+It means that if this option is not provided and "context" argument is not explicitly passed to Store#dispatch then context will default to `null`.
+
+```js
+// example 1
+const store = new Store()
+store.dispatch('test'/*, payload, context */) // context for this call chain will be `null`
+store.dispatch('test', 123, { user: { id: 1 } }) // context for this call chain will be `{ user: { id: 1 } }`
+```
+
+```js
+// example 2
+const store = new Store({
+  getDefaultContext () {
+    return {}
+  }
+})
+store.dispatch('test'/*, payload, context */) // context for this call chain will be `{}`
+store.dispatch('test', 123, { user: { id: 1 } }) // context for this call chain will be `{ user: { id: 1 } }`
+```
+
+!> It's handy to make context default to `{}` - this way everywhere you check for `context.user` you don't have to check if `context != null`.
 
 ## #define(name, fn, [meta])
 
