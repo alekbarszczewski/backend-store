@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+* revert [feature] - new Store({ getDefaultContext }) option (not needed)
+
 ## 0.4.0
 
 * [feature] - new Store({ getDefaultContext }) option

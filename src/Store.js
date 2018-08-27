@@ -8,10 +8,6 @@ class Store {
   constructor (options = {}) {
     this.methods = new Map()
     this.middleware = []
-    if (options.getDefaultContext !== undefined) {
-      ow(options.getDefaultContext, ow.function.label('options.getDefaultContext'))
-    }
-    this.getDefaultContext = options.getDefaultContext || (() => null)
   }
 
   define (name, fn, meta) {
@@ -33,10 +29,7 @@ class Store {
     return pluginFn(this, options)
   }
 
-  async dispatch (name, payload, context, options = {}) {
-    if (context === undefined) {
-      context = this.getDefaultContext()
-    }
+  async dispatch (name, payload, context = null, options = {}) {
     return this._dispatch(name, payload, context, {
       cid: options.cid || uuid(),
       seq: 0

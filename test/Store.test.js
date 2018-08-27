@@ -18,39 +18,6 @@ describe('Store', () => {
       expect(s.methods.size).to.equal(0)
       expect(s.middleware).to.be.instanceof(Array)
       expect(s.middleware.length).to.equal(0)
-      expect(s.getDefaultContext).to.be.a('function')
-      expect(s.getDefaultContext()).to.equal(null)
-    })
-
-    it('support getDefaultContext option', () => {
-      const defaultContext = {}
-      const s = new Store({
-        getDefaultContext () {
-          return defaultContext
-        }
-      })
-      expect(s).to.be.instanceof(Store)
-      expect(s.methods).to.be.instanceof(Map)
-      expect(s.methods.size).to.equal(0)
-      expect(s.middleware).to.be.instanceof(Array)
-      expect(s.middleware.length).to.equal(0)
-      expect(s.getDefaultContext).to.be.a('function')
-      expect(s.getDefaultContext()).to.equal(defaultContext)
-    })
-
-    it('throw on invalid getDefaultContext option', () => {
-      [
-        null,
-        123,
-        true,
-        {},
-        [],
-        'abc'
-      ].forEach(getDefaultContext => {
-        expect(() => {
-          return new Store({ getDefaultContext })
-        }).to.throw(/^Expected `options.getDefaultContext` to be of type `Function` but received type/)
-      })
     })
   })
 
@@ -595,22 +562,6 @@ describe('Store', () => {
 
       expect(stub.calledOnce).to.equal(true)
       expect(stub.firstCall.args[2]).to.equal(null)
-    })
-
-    it('respect default context', async () => {
-      const defaultContext = {}
-      const s = new Store({
-        getDefaultContext () {
-          return defaultContext
-        }
-      })
-      const stub = sinon.stub(s, '_dispatch')
-      const fn1 = sinon.fake.resolves()
-      s.define('fn1', fn1)
-      await s.dispatch('fn1')
-
-      expect(stub.calledOnce).to.equal(true)
-      expect(stub.firstCall.args[2]).to.equal(defaultContext)
     })
   })
 })
