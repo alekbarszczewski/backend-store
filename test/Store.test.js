@@ -289,6 +289,7 @@ describe('Store', () => {
         expect(methodContext.seq).to.equal(index)
         expect(methodContext.cid).to.be.equal(cid).and.to.be.a.uuid('v4')
         expect(methodContext.stack).to.eql(stack)
+        expect(methodContext.options).to.eql({})
         stack.push({
           cid,
           seq: index + 1,
@@ -297,7 +298,7 @@ describe('Store', () => {
       })
     })
 
-    it('respect custom cid option', async () => {
+    it('respect custom cid option and pass options to method context', async () => {
       const s = new Store()
       const fn1 = sinon.fake(async (payload, { dispatch }) => {
         await dispatch('fn2')
@@ -309,12 +310,19 @@ describe('Store', () => {
 
       const payload = {}
       const context = {}
-      await s.dispatch('fn1', payload, context, { cid: 'abc' })
+      const options = { cid: 'abc' }
+      await s.dispatch('fn1', payload, context, options)
 
       const cid1 = fn1.firstCall.args[1].cid
       const cid2 = fn2.firstCall.args[1].cid
 
       expect(cid1).to.equal('abc').and.to.equal(cid2)
+
+      const methodContext1 = fn1.firstCall.args[1]
+      expect(methodContext1.options).to.equal(options)
+
+      const methodContext2 = fn2.firstCall.args[1]
+      expect(methodContext2.options).to.equal(options)
     })
 
     it('throw error if method does not exist', async () => {
@@ -344,7 +352,8 @@ describe('Store', () => {
       })
       s.use(m1)
       const context = {}
-      await s.dispatch('fn1', 'payload1', context)
+      const options = { abc: 123 }
+      await s.dispatch('fn1', 'payload1', context, options)
       expect(m1.calledTwice).to.equal(true)
       expect(fn1.calledOnce).to.equal(true)
       expect(fn2.calledOnce).to.equal(true)
@@ -366,6 +375,7 @@ describe('Store', () => {
       expect(ctx1.meta).to.equal(meta1)
       expect(ctx1.errors).to.equal(errors)
       expect(ctx1.stack).to.eql(stack)
+      expect(ctx1.options).to.equal(options)
       expect(ctx1.methodContext).to.equal(fn1.firstCall.args[1])
       expect(next1).to.be.instanceOf(Function)
 
@@ -379,6 +389,7 @@ describe('Store', () => {
       expect(ctx2.meta).to.equal(meta2)
       expect(ctx2.errors).to.equal(errors)
       expect(ctx2.stack).to.eql(stack)
+      expect(ctx2.options).to.equal(options)
       expect(ctx2.methodContext).to.equal(fn2.firstCall.args[1])
       expect(next2).to.be.instanceOf(Function)
     })

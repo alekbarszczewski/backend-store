@@ -32,7 +32,8 @@ class Store {
   async dispatch (name, payload, context = null, options = {}) {
     return this._dispatch(name, payload, context, {
       cid: options.cid || uuid(),
-      seq: 0
+      seq: 0,
+      options
     }, [])
   }
 
@@ -62,7 +63,8 @@ class Store {
       seq,
       meta,
       errors,
-      stack
+      stack,
+      options: options.options
     }
 
     const middlewareContext = {
@@ -73,7 +75,8 @@ class Store {
       meta,
       errors,
       stack,
-      methodContext
+      methodContext,
+      options: options.options
     }
 
     const middlewares = this.middleware.map(middleware => middleware.bind(null))

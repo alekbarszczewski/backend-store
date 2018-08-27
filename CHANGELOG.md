@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+[feature] - options passed as 4th arg to Store#dispatch are now available in method context and middleware context
+
 ## 0.5.0
 
 * revert [feature] - new Store({ getDefaultContext }) option (not needed)

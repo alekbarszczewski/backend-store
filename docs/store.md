@@ -165,6 +165,7 @@ Executes method in the store.
 | [context]     | `any`      | User defined context. Context is shared across all methods executed in single call chain
 | [options]     | `object`   | Additional options
 | [options.cid] | `string`   | User-defined call chain id. It defaults to random UUID. You can set it to express request id for example.
+| [options.*]   | `any`      | All options will be passed to [method context](/store.md?id=method-context) and [middleware context](/store.md?id=middleware-context)
 
 **Return**:
 
@@ -240,6 +241,7 @@ Method context is passed as second argument (along with payload) to any executed
 | meta            | `any`      | User-defined method meta data.
 | errors          | `object`   | [Errors](/errors.md) dictionary.
 | stack           | `array`    | Call chain stack.
+| options         | `object`   | Options passed to [Store#dispatch](/store.md?id=dispatchmethod-payload-context-options).
 
 **dispatch**
 
@@ -436,6 +438,7 @@ Middleware context is passed as second argument (along with payload and next) to
 | errors          | `object`   | [Errors](/errors.md) dictionary.
 | stack           | `array`    | Call chain stack.
 | methodContext   | `object`   | [Method context](/store.md?id=method-context)
+| options         | `object`   | Options passed to [Store#dispatch](/store.md?id=dispatchmethod-payload-context-options).
 
 It's pretty much the same as [Method context](/store.md?id=method-context) with following differences:
 
