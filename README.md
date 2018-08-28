@@ -78,6 +78,4 @@ https://alekbarszczewski.github.io/backend-store.
 ## TODO
 
 * ow - label arguments (waiting for ow package to be updated)
-* error - fromJSON
-* error - do not default reason to null
 * test plugin

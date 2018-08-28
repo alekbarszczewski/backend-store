@@ -318,3 +318,41 @@ const error = wrapError(false) // error = false
 const error = wrapError(new ValidationError()) // error = ValidationError instance
 const error = wrapError(new Error('test')) // error = InternalError instance, err.getOriginalError().message = test
 ```
+
+## fromJSON(json)
+
+`(object) => AppError`
+
+Builds AppError from json.
+This is reverse operation of [AppError#toJSON](/errors?id=tojson).
+In most cases you don't need it.
+Useful for some test plugins.
+
+```js
+// example 1
+import { errors } from 'backend-store'
+
+const err = new errors.ValidationError({
+  message: 'abc'
+}).addReason([
+  { path: 'a', message: 'b', reason: 'c' }
+])
+
+const json = err.toJSON()
+
+/*
+{
+  type: 'validation',
+  severity: 'warning',
+  message: 'abc',
+  reasons: [ { path: 'a', message: 'b', reason: 'c' } ]
+}
+*/
+
+const errFromJson = errors.fromJSON(err)
+
+// err instaceof ValidationError
+// err.message = 'abc'
+// err.severity = 'warning'
+// err.getReasons() = [ { path: 'a', message: 'b', reason: 'c' } ]
+```

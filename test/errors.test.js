@@ -148,6 +148,50 @@ describe('errors', () => {
     })
   })
 
+  describe('fromJSON', () => {
+    it('parse error from JSON', () => {
+      testErrors.forEach(errData => {
+        const err = new errData.ErrorCls().addReason([
+          { path: 'a', message: 'b', reason: 'abc' },
+          { path: 'c', message: 'd' }
+        ])
+        const json = err.toJSON()
+        const errFromJson = errors.fromJSON(json)
+        expect(err).to.be.instanceof(errData.ErrorCls)
+        expect(errFromJson).to.be.instanceof(errData.ErrorCls)
+        expect(err.message).to.equal(errFromJson.message)
+        expect(err.severity).to.equal(errFromJson.severity)
+        expect(err.getReasons()).to.eql(errFromJson.getReasons())
+        expect(err.statusCode).to.eql(errFromJson.statusCode)
+
+        const err2 = new errData.ErrorCls({
+          message: 'customMessage',
+          severity: 'customSeverity'
+        })
+        const json2 = err2.toJSON()
+        const errFromJson2 = errors.fromJSON(json2)
+
+        expect(errFromJson2.message).to.equal('customMessage')
+        expect(errFromJson2.severity).to.equal(err2.severity)
+      })
+    })
+
+    it('throw error when error type not found', () => {
+      const invalidErrorJson = [
+        null,
+        {},
+        undefined,
+        'abc',
+        { type: 'abc' }
+      ]
+      invalidErrorJson.forEach(json => {
+        expect(() => {
+          errors.fromJSON(json)
+        }).to.throw(/error type '.+' not found - could not build error from JSON/)
+      })
+    })
+  })
+
   describe('AppError', () => {
     describe('::normalizeOptions', () => {
       it('normalizeOptions', () => {

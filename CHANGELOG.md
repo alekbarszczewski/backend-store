@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+[feature] - errors.fromJSON() method (build AppError from json)
+
 ## 0.6.0
 
 [feature] - options passed as 4th arg to Store#dispatch are now available in method context and middleware context
